@@ -5,7 +5,7 @@
 {
   # Path to your oh-my-zsh installation.
   #export ZSH="/Users/o0-o/.oh-my-zsh"
-  export ZSH="${XDG_CONFIG_DIR:-$HOME/.config/zsh/omz}"
+  export ZSH="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/omz"
 
   # Set name of the theme to load --- if set to "random", it will
   # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -64,7 +64,7 @@
   HIST_STAMPS="yyyy-mm-dd"
 
   # Would you like to use another custom folder than $ZSH/custom?
-  # ZSH_CUSTOM=/path/to/new-custom-folder
+  ZSH_CUSTOM="${XDG_CONFIG_HOME-$HOME/.config}/zsh/omz_custom"
 
   # Which plugins would you like to load?
   # Standard plugins can be found in $ZSH/plugins/

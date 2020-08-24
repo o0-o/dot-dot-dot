@@ -1,4 +1,4 @@
-HISTFILE="${XDG_DATA_DIR-$HOME/.local/share}/bash/bash_history" ||
+HISTFILE="${XDG_DATA_HOME-$HOME/.local/share}/bash/bash_history" ||
 
 return 1
 

@@ -1,1 +1,18 @@
-.zshrc
+# ZSHRC
+
+# sort and source sh (generic) and zsh rc configurations
+for RC in $(  { ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/sh/rc.d/"*
+                ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/zshrc.d/"*
+              } 2>/dev/null |
+                sort        |
+                tr '\n' ' '
+           ); do
+  source "${RC}" ||
+  printf 'ZSHRC: An error occured in %s\n' "${RC##*/}" >&2
+done  ||
+
+{ printf 'ZSHRC: An error occured in .zshrc\n' >&2
+  return 1
+}
+
+return 0

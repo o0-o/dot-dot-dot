@@ -13,7 +13,7 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
 Plug 'ciaranm/detectindent'
-Plug 'Yggdroot/indentLine'
+" Plug 'Yggdroot/indentLine'
 Plug 'preservim/nerdtree'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -55,3 +55,17 @@ endif
 " delete trailing whitespace on save
 autocmd BufWritePre * %s/\s\+$//e
 autocmd BufWritePre * %s/\n\+\%$//e
+
+" indent line
+set list lcs=space:·,trail:·,tab:»·
+highlight NonText ctermfg=239
+
+" search highlight
+set hlsearch
+highlight Search cterm=NONE ctermfg=NONE ctermbg=239
+highlight IncSearch cterm=NONE ctermfg=NONE ctermbg=239
+
+" negative space and length warning
+let &colorcolumn="72,".join(range(80,999),",")
+highlight colorcolumn ctermbg=234
+highlight EndOfBuffer ctermbg=234 ctermfg=234
