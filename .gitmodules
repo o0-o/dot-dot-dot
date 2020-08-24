@@ -1,0 +1,9 @@
+[submodule ".config/zsh/omz"]
+	path = .config/zsh/omz
+	url = https://github.com/ohmyzsh/ohmyzsh.git
+[submodule ".config/zsh/omz_custom/themes/powerlevel10k"]
+	path = .config/zsh/omz_custom/themes/powerlevel10k
+	url = https://github.com/romkatv/powerlevel10k.git
+[submodule ".config/tmux/gpakosz_.tmux"]
+	path = .config/tmux/gpakosz_.tmux
+	url = https://github.com/gpakosz/.tmux.git

@@ -1,0 +1,28 @@
+# ZPROFILE
+
+# PATH may not be configure yet, so use full path commands
+# except for built-ins
+
+# XDG may not be configured yet, so use relative path
+declare ZPROFILE_PATH="$(
+  /usr/bin/dirname "$(  /usr/bin/readlink "${HOME}/.zprofile" ||
+                        printf '%s' "${HOME}/.zprofile"
+                     )"
+)"    &&
+
+# sort and source sh (generic) and zsh profile configurations
+for PROFILE in $( { /bin/ls -d "${ZPROFILE_PATH}/../sh/profile.d/"*
+                    /bin/ls -d "${ZPROFILE_PATH}/zprofile.d/"*
+                  } 2>/dev/null   |
+                    /usr/bin/sort |
+                    /usr/bin/tr '\n' ' '
+                ); do
+  source "${PROFILE}" ||
+  printf 'ZPROFILE: An error occured in %s\n' "${PROFILE##*/}" >&2
+done  ||
+
+{ printf 'ZPROFILE: An error occured in .zprofile\n' >&2
+  return 1
+}
+
+return 0

@@ -1,0 +1,28 @@
+# BASH PROFILE
+
+# PATH may not be configure yet, so use full path commands
+# except for built-ins
+
+# XDG may not be configured yet, so use relative path
+declare BASH_PROFILE_PATH="$(
+  /usr/bin/dirname "$(  /usr/bin/readlink "${HOME}/.bash_profile" ||
+                        printf '%s' "${HOME}/.bash_profile"
+                     )"
+)"    &&
+
+# sort and source sh (generic) and zsh profile configurations
+for PROFILE in $( { /bin/ls -d "${BASH_PROFILE_PATH}/../sh/profile.d/"*
+                    /bin/ls -d "${BASH_PROFILE_PATH}/bash_profile.d/"*
+                  } 2>/dev/null   |
+                    /usr/bin/sort |
+                    /usr/bin/tr '\n' ' '
+                ); do
+  source "${PROFILE}" ||
+  printf 'BASH_PROFILE: An error occured in %s\n' "${PROFILE##*/}" >&2
+done  ||
+
+{ printf 'BASH_PROFILE: An error occured in .bash_profile\n' >&2
+  return 1
+}
+
+return 0
