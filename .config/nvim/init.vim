@@ -13,7 +13,6 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
 Plug 'ciaranm/detectindent'
-" Plug 'Yggdroot/indentLine'
 Plug 'preservim/nerdtree'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -66,6 +65,7 @@ highlight Search cterm=NONE ctermfg=NONE ctermbg=239
 highlight IncSearch cterm=NONE ctermfg=NONE ctermbg=239
 
 " negative space and length warning
-let &colorcolumn="72,".join(range(80,999),",")
+let &colorcolumn="73,".join(range(80,999),",")
+highlight Normal ctermbg=235
 highlight colorcolumn ctermbg=234
 highlight EndOfBuffer ctermbg=234 ctermfg=234
