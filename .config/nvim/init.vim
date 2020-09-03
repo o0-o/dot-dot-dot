@@ -14,6 +14,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
 Plug 'ciaranm/detectindent'
 Plug 'preservim/nerdtree'
+Plug 'bling/vim-bufferline'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'ap/vim-css-color'
@@ -69,3 +70,8 @@ let &colorcolumn="73,".join(range(80,999),",")
 highlight Normal ctermbg=235
 highlight colorcolumn ctermbg=234
 highlight EndOfBuffer ctermbg=234 ctermfg=234
+
+" airline
+let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
+let g:airline_powerline_fonts = 1
+let g:airline_theme='simple'
