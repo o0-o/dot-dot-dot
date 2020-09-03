@@ -323,3 +323,5 @@ bind        Left previous-window
 bind        n split-window -h
 bind        Right next-window -a
 bind        Left previous-window -a
+
+bind -Tcopy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "pbcopy" \; display-message "Copied!"
