@@ -8,21 +8,26 @@ set viminfo+=n$XDG_CACHE_HOME/nvim/viminfo
 " junegunn/vim-plug
 call plug#begin(system('printf "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged"'))
 Plug 'tpope/vim-sensible'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-commentary'
-Plug 'ciaranm/detectindent'
-Plug 'preservim/nerdtree'
-Plug 'bling/vim-bufferline'
-Plug 'darfink/vim-plist'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'ap/vim-css-color'
+" Plug 'tpope/vim-surround'
+" Plug 'tpope/vim-repeat'
+" Plug 'tpope/vim-fugitive'
+" Plug 'tpope/vim-obsession'
+" Plug 'tpope/vim-commentary'
+ Plug 'ciaranm/detectindent'
+" Plug 'sheerun/vim-polyglot'
+" Plug 'preservim/nerdtree'
+"Plug 'bling/vim-bufferline'
+ Plug 'ervandew/supertab'
+ Plug 'darfink/vim-plist'
+" Plug 'itchyny/lightline.vim'
+ Plug 'vim-airline/vim-airline'
+" Plug 'vim-airline/vim-airline-themes'
+ Plug 'arcticicestudio/nord-vim'
+ Plug 'ap/vim-css-color'
 call plug#end()
 
 " basics
-set bg=dark
+"set bg=dark
 set go=a
 set mouse=a
 set clipboard+=unnamedplus
@@ -35,6 +40,17 @@ set expandtab
 set shiftwidth=2
 set softtabstop=2
 
+"let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+"set termguicolors
+colorscheme nord
+highlight Comment cterm=italic gui=italic
+set noshowmode
+"let g:lightline = {
+"      \ 'colorscheme': 'nord',
+"      \ }
+
+set laststatus=2
+
 " autocompletion
 set wildmode=longest,list,full
 
@@ -45,13 +61,13 @@ autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 set splitbelow splitright
 
 " preservim/nerdtree
-map <leader>n :NERDTreeToggle<CR>
-autocmd bufenter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | q | endif
-if has('nvim')
-  let NERDTreeBookmarksFile = stdpath('data') . '/NERDTreeBookmarks'
-else
-  let NERDTreeBookmarksFile = '~/.vim' . '/NERDTreeBookmarks'
-endif
+" map <leader>n :NERDTreeToggle<CR>
+" autocmd bufenter * if (winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree()) | q | endif
+" if has('nvim')
+"   let NERDTreeBookmarksFile = stdpath('data') . '/NERDTreeBookmarks'
+" else
+"   let NERDTreeBookmarksFile = '~/.vim' . '/NERDTreeBookmarks'
+" endif
 
 " delete trailing whitespace on save
 autocmd BufWritePre * %s/\s\+$//e
@@ -59,20 +75,24 @@ autocmd BufWritePre * %s/\n\+\%$//e
 
 " indent line
 set list lcs=space:·,trail:·,tab:»·
-highlight NonText ctermfg=239
+"highlight NonText ctermfg=239
 
 " search highlight
 set hlsearch
-highlight Search cterm=NONE ctermfg=NONE ctermbg=239
-highlight IncSearch cterm=NONE ctermfg=NONE ctermbg=239
+"highlight Search cterm=NONE ctermfg=NONE ctermbg=239
+"highlight IncSearch cterm=NONE ctermfg=NONE ctermbg=239
 
 " negative space and length warning
-let &colorcolumn="73,".join(range(80,999),",")
-highlight Normal ctermbg=235
-highlight colorcolumn ctermbg=234
-highlight EndOfBuffer ctermbg=234 ctermfg=234
+let &colorcolumn="73,80"
+"highlight Normal ctermbg=235
+"highlight colorcolumn ctermbg=234
+"highlight EndOfBuffer ctermbg=234 ctermfg=234
 
 " airline
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 let g:airline_powerline_fonts = 1
-let g:airline_theme='simple'
+"let g:airline_theme='simple'
+
+" supertab
+ let g:SuperTabMappingForward = '<s-tab>'
+ let g:SuperTabMappingBackward = '<s-c-tab>'

@@ -1,26 +1,26 @@
 # P10K CFG ZSH
 
 # colors
-declare BLACK='0'
-declare DARK_RED='1'
-declare DARK_GREEN='2'
-declare DARK_YELLOW='3'
-declare DARK_BLUE='4'
-declare DARK_MAGENTA='5'
-declare DARK_CYAN='6'
-declare LIGHT_GRAY='7'
-declare DARK_GRAY='8'
-declare LIGHT_RED='9'
-declare LIGHT_GREEN='10'
-declare LIGHT_YELLOW='11'
-declare LIGHT_BLUE='12'
-declare LIGHT_MAGENTA='13'
-declare LIGHT_CYAN='14'
-declare WHITE='15'
-declare ALT_BLACK='16'
-declare ORANGE='202'
-declare BACKGROUND='235'
-declare ALT_WHITE='255'
+#local -r BLACK='0'
+#local -r DARK_RED='1'
+#local -r DARK_GREEN='2'
+#local -r DARK_YELLOW='3'
+#local -r DARK_BLUE='4'
+#local -r DARK_MAGENTA='5'
+#local -r DARK_CYAN='6'
+#local -r LIGHT_GRAY='7'
+#local -r DARK_GRAY='8'
+#local -r LIGHT_RED='9'
+#local -r LIGHT_GREEN='10'
+#local -r LIGHT_YELLOW='11'
+#local -r LIGHT_BLUE='12'
+#local -r LIGHT_MAGENTA='13'
+#local -r LIGHT_CYAN='14'
+#local -r WHITE='15'
+#local -r ALT_BLACK='16'
+#local -r ORANGE='202'
+#local -r BACKGROUND='235'
+#local -r ALT_WHITE='255'
 
 # Temporarily change options.
 'builtin' 'local' '-a' 'p10k_config_opts'
@@ -84,13 +84,13 @@ declare ALT_WHITE='255'
 
   # Connect left prompt lines with these symbols. You'll probably want to use the same color
   # as POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_FOREGROUND below.
-  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX="%${DARK_GRAY}F╭─"
-  typeset -g POWERLEVEL9K_MULTILINE_NEWLINE_PROMPT_PREFIX="%${DARK_GRAY}F├─"
-  typeset -g POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="%${DARK_GRAY}F╰─"
+  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX="%8F╭─"
+  typeset -g POWERLEVEL9K_MULTILINE_NEWLINE_PROMPT_PREFIX="%8F├─"
+  typeset -g POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="%8F╰─"
   # Connect right prompt lines with these symbols.
-  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_SUFFIX="%${DARK_GRAY}F─╯"
+  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_SUFFIX="%8F─╯"
   typeset -g POWERLEVEL9K_MULTILINE_NEWLINE_PROMPT_SUFFIX=
-  typeset -g POWERLEVEL9K_MULTILINE_LAST_PROMPT_SUFFIX= #"%${DARK_GRAY}F─╮"
+  typeset -g POWERLEVEL9K_MULTILINE_LAST_PROMPT_SUFFIX= #"%8F─╮"
 
   # Filler between left and right prompt on the first prompt line. You can set it to ' ', '·' or
   # '─'. The last two make it easier to see the alignment between left and right prompt and to
@@ -102,7 +102,7 @@ declare ALT_WHITE='255'
   if [[ $POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_CHAR != ' ' ]]; then
     # The color of the filler. You'll probably want to match the color of POWERLEVEL9K_MULTILINE
     # ornaments defined above.
-    typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_FOREGROUND="${DARK_GRAY}"
+    typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_FOREGROUND="8"
     # Start filler from the edge of the screen if there are no left segments on the first line.
     typeset -g POWERLEVEL9K_EMPTY_LINE_LEFT_PROMPT_FIRST_SEGMENT_END_SYMBOL='%{%}'
     # End filler on the edge of the screen if there are no right segments on the first line.
@@ -120,7 +120,7 @@ declare ALT_WHITE='255'
   # The right end of left prompt.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_LAST_SEGMENT_END_SYMBOL='\uE0BC'
   # The left end of right prompt.
-  typeset -g POWERLEVEL9K_RIGHT_PROMPT_FIRST_SEGMENT_START_SYMBOL= #"%${DARK_GRAY}F╰─" #'\u2571' #'\uE0BA'
+  typeset -g POWERLEVEL9K_RIGHT_PROMPT_FIRST_SEGMENT_START_SYMBOL= #"%8F╰─" #'\u2571' #'\uE0BA'
   # The left end of left prompt.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_FIRST_SEGMENT_START_SYMBOL='\uE0B2' #'\u2571' #'\uE0B2'
   # The right end of right prompt.
@@ -132,9 +132,9 @@ declare ALT_WHITE='255'
   # Transparent background.
   typeset -g POWERLEVEL9K_PROMPT_CHAR_BACKGROUND=
   # Green prompt symbol if the last command succeeded.
-  typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_{VIINS,VICMD,VIVIS,VIOWR}_FOREGROUND="${LIGHT_MAGENTA}"
+  typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_{VIINS,VICMD,VIVIS,VIOWR}_FOREGROUND="5"
   # Red prompt symbol if the last command failed.
-  typeset -g POWERLEVEL9K_PROMPT_CHAR_ERROR_{VIINS,VICMD,VIVIS,VIOWR}_FOREGROUND="${LIGHT_MAGENTA}"
+  typeset -g POWERLEVEL9K_PROMPT_CHAR_ERROR_{VIINS,VICMD,VIVIS,VIOWR}_FOREGROUND="5"
   # Default prompt symbol.
   typeset -g POWERLEVEL9K_PROMPT_CHAR_{OK,ERROR}_VIINS_CONTENT_EXPANSION='❯'
   # Prompt symbol in command vi mode.
@@ -153,19 +153,19 @@ declare ALT_WHITE='255'
 
   ##################################[ dir: current directory ]##################################
   # Current directory background color.
-  typeset -g POWERLEVEL9K_DIR_BACKGROUND="${WHITE}"
+  typeset -g POWERLEVEL9K_DIR_BACKGROUND="15"
   # Default current directory foreground color.
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND="${DARK_GRAY}" #"${LIGHT_GRAY}"
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND="8" #"7"
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original.
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
   # Replace removed segment suffixes with this symbol.
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER=
   # Color of the shortened directory segments.
-  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND="${BACKGROUND}" #"${LIGHT_GRAY}" #"${BLACK}"
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND="235" #"7" #"0"
   # Color of the anchor directory segments. Anchor segments are never shortened. The first
   # segment is always an anchor.
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND="${ALT_BLACK}" #"${ALT_WHITE}"
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND="16" #"255"
   # Display anchor directory segments in bold.
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
   # Don't shorten directories that contain any of these files. They are anchors.
@@ -231,7 +231,7 @@ declare ALT_WHITE='255'
 
   # The default icon shown next to non-writable directories when POWERLEVEL9K_DIR_SHOW_WRITABLE is
   # set to v2.
-  #typeset -g POWERLEVEL9K_LOCK_ICON="%${DARK_YELLOW}F!"
+  #typeset -g POWERLEVEL9K_LOCK_ICON="%3F!"
 
   # POWERLEVEL9K_DIR_CLASSES allows you to specify custom icons and colors for different
   # directories. It must be an array with 3 * N elements. Each triplet consists of:
@@ -257,48 +257,48 @@ declare ALT_WHITE='255'
   # it will signify success by turning green.
   typeset -g POWERLEVEL9K_STATUS_OK=true
   typeset -g POWERLEVEL9K_STATUS_OK_VISUAL_IDENTIFIER_EXPANSION= #'✔'
-   typeset -g POWERLEVEL9K_STATUS_OK_FOREGROUND="${DARK_GRAY}"
-   typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND= #"${DARK_GRAY}"
+   typeset -g POWERLEVEL9K_STATUS_OK_FOREGROUND="8"
+   typeset -g POWERLEVEL9K_STATUS_OK_BACKGROUND= #"8"
 
   # Status when some part of a pipe command fails but the overall exit status is zero. It may look
   # like this: 1|0.
   typeset -g POWERLEVEL9K_STATUS_OK_PIPE=true
   typeset -g POWERLEVEL9K_STATUS_OK_PIPE_VISUAL_IDENTIFIER_EXPANSION= #'✔'
-  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_FOREGROUND="${DARK_GRAY}"
-  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_BACKGROUND= #"${DARK_GRAY}"
+  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_FOREGROUND="8"
+  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_BACKGROUND= #"8"
 
   # Status when it's just an error code (e.g., '1'). No need to show it if prompt_char is enabled as
   # it will signify error by turning red.
   typeset -g POWERLEVEL9K_STATUS_ERROR=true
   typeset -g POWERLEVEL9K_STATUS_ERROR_VISUAL_IDENTIFIER_EXPANSION= #'✘'
-  typeset -g POWERLEVEL9K_STATUS_ERROR_FOREGROUND="${DARK_RED}"
-  typeset -g POWERLEVEL9K_STATUS_ERROR_BACKGROUND= #"${DARK_RED}"
+  typeset -g POWERLEVEL9K_STATUS_ERROR_FOREGROUND="1"
+  typeset -g POWERLEVEL9K_STATUS_ERROR_BACKGROUND= #"1"
 
   # Status when the last command was terminated by a signal.
   typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL=true
   # Use terse signal names: "INT" instead of "SIGINT(2)".
   typeset -g POWERLEVEL9K_STATUS_VERBOSE_SIGNAME=false
   typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_VISUAL_IDENTIFIER_EXPANSION= #'✘'
-  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_FOREGROUND="${DARK_RED}"
-  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_BACKGROUND= #"${DARK_RED}"
+  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_FOREGROUND="1"
+  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_BACKGROUND= #"1"
 
   # Status when some part of a pipe command fails and the overall exit status is also non-zero.
   # It may look like this: 1|0.
   typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE=true
   typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_VISUAL_IDENTIFIER_EXPANSION= #'✘'
-  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_FOREGROUND="${DARK_RED}"
-  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_BACKGROUND= #"${DARK_RED}"
+  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_FOREGROUND="1"
+  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_BACKGROUND= #"1"
 
  ##################################[ context: user@hostname ]##################################
   # Context color when running with privileges.
-  typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND="${BACKGROUND}" #"${LIGHT_RED}"
-  typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND="${ORANGE}" #"${LIGHT_RED}"
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND="235" #"9"
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND="202" #"9"
   # Context color in SSH without privileges.
-  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_FOREGROUND="${BLACK}"
-  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_BACKGROUND="${LIGHT_CYAN}"
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_FOREGROUND="0"
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_BACKGROUND="14"
   # Default context color (no privileges, no SSH).
-  typeset -g POWERLEVEL9K_CONTEXT_FOREGROUND="${BLACK}"
-  typeset -g POWERLEVEL9K_CONTEXT_BACKGROUND="${LIGHT_CYAN}"
+  typeset -g POWERLEVEL9K_CONTEXT_FOREGROUND="0"
+  typeset -g POWERLEVEL9K_CONTEXT_BACKGROUND="14"
 
   # Context format when running with privileges: user@hostname.
   typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE='%n'
@@ -318,8 +318,8 @@ declare ALT_WHITE='255'
 
   ###################[ command_execution_time: duration of the last command ]###################
   # Execution time color.
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND="${DARK_GRAY}"
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND= #"${DARK_GRAY}"
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_FOREGROUND="8"
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_BACKGROUND= #"8"
   # Show duration of the last command if takes at least this many seconds.
   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD=0
   # Show this many fractional digits. Zero means round to seconds.
@@ -333,8 +333,8 @@ declare ALT_WHITE='255'
 
     ####################################[ time: current time ]####################################
   # Current time color.
-  typeset -g POWERLEVEL9K_TIME_FOREGROUND="${DARK_GRAY}"
-  typeset -g POWERLEVEL9K_TIME_BACKGROUND= #"${DARK_GRAY}"
+  typeset -g POWERLEVEL9K_TIME_FOREGROUND="8"
+  typeset -g POWERLEVEL9K_TIME_BACKGROUND= #"8"
   # Format for the current time: 09:51:02. See `man 3 strftime`.
   typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M:%S | %Y/%m/%d}'
   # If set to true, time will update when you hit enter. This way prompts for the past

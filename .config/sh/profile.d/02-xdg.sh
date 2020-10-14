@@ -86,12 +86,7 @@ for COMPAT_BIN_DIR in "${HOME}/bin" "${HOME}/Applications"; do
 
 done                                                              &&
 
-# enforce xdg
-typeset LESSHISTFILE="${XDG_DATA_HOME:-$HOME/.local}/share/less/lesshst" &&
-install -m '700' -d \
-  "${LESSHISTFILE%/*}"                                            &&
-
-export PATH LESSHISTFILE                                          ||
+export PATH                                                       ||
 
 return 1
 
