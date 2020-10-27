@@ -43,6 +43,12 @@
 
   # otherwise attach to existing window
   tmux new-session -t "${DEFAULT_SESSION}"
+
+  # install/update plugins in background
+  "${XDG_CONFIG_HOME:-$HOME}/tmux/plugins/tpm/bin/install_plugins"      \
+    &>/dev/null &
+  "${XDG_CONFIG_HOME:-$HOME}/tmux/plugins/tpm/bin/update_plugins" 'all' \
+    &>/dev/null &
 }                             ||
 [[ "${UID}"  == 0 ]]          ||
 [[ "${EUID}" == 0 ]]          ||
