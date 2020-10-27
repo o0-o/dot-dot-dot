@@ -4,3 +4,6 @@
 [submodule ".config/zsh/omz_custom/themes/powerlevel10k"]
 	path = .config/zsh/omz_custom/themes/powerlevel10k
 	url = https://github.com/romkatv/powerlevel10k.git
+[submodule ".config/zsh/omz_custom/plugins/fast-syntax-highlighting"]
+	path = .config/zsh/omz_custom/plugins/fast-syntax-highlighting
+	url = https://github.com/zdharma/fast-syntax-highlighting
