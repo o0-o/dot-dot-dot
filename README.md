@@ -2,10 +2,11 @@
 My dot files
 
 # Requires
+* zsh
 * tmux
 * tmuxinator
 * neovim
-* zsh
+* Roboto Mono Nerd Font
 
 # Installation
 Install into your home directory
