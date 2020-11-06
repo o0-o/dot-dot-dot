@@ -1,12 +1,12 @@
 ### ALIASES ZSH
 
-declare -a aliases=(
+declare -a alias_defs=(
   'cat'   "ccat --bg='dark' --color='auto'" '/dev/null'
   'vi'    'nvim'                            '--version'
   'vim'   'nvim'                            '--version'
 )                                             &&
 
-for command alias test in "${aliases[@]}";    do
+for command alias test in "${alias_defs[@]}"; do
   # the command used in alias without options/arguments
   alias_command="$( printf '%s' "${command}"  |
                     cut -d ' ' -f '1'
