@@ -1,17 +1,20 @@
 # ZSHRC
 
+declare ZSHRC='true'
+export  ZSHRC
+
 # only use zshrc in alacritty, allowing other terminal emulators to
 # remain in a stock configuration
 [   "${TERM}" = 'alacritty' ] &&
 # sort and source sh (generic) and zsh rc configurations
-for RC in $(  { ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/sh/rc.d/"*
+for rc in $(  { ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/sh/rc.d/"*
                 ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/zshrc.d/"*
               } 2>/dev/null |
                 sort        |
                 tr '\n' ' '
            ); do
-  source "${RC}" ||
-  printf 'ZSHRC: An error occured in %s\n' "${RC##*/}" >&2
+  source "${rc}" ||
+  printf 'ZSHRC: An error occured in %s\n' "${rc##*/}" >&2
 done                          ||
 [ ! "${TERM}" = 'alacritty' ] ||
 

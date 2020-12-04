@@ -23,10 +23,10 @@ down-line-or-local-history() {
     zle set-local-history 0
 }
 
-bindkey "${key[Up]}"    up-line-or-local-history                        &&
-bindkey "${key[Down]}"  down-line-or-local-history                      &&
-zle -N up-line-or-local-history                                         &&
-zle -N down-line-or-local-history                                       ||
+bindkey "^[OA"  up-line-or-local-history    &&
+bindkey "^[OB"  down-line-or-local-history  &&
+zle -N up-line-or-local-history             &&
+zle -N down-line-or-local-history           ||
 
 return 1
 

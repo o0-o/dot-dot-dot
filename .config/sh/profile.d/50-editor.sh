@@ -1,21 +1,21 @@
 # use nvim, vim or vi depending on availability
-{ command -v nvim >/dev/null  &&
-  typeset EDITOR="nvim"       ||
+{ command -v nvim >/dev/null    &&
+  typeset EDITOR="nvim"         ||
   { command -v vim >/dev/null   &&
     typeset EDITOR="vim"
-  }                           ||
+  }                             ||
   typeset EDITOR="vi"
-}             &&
+}                               &&
 
 # update vim plugins
-( nohup "${EDITOR}"                 \
-    -c ':PlugInstall'               \
-    -c ':PlugClean!'                \
-    -c ':q!'                        \
-    -c ':q!' </dev/null >/dev/null  &
-)             &&
+( nohup "${EDITOR}"                     \
+        -c ':PlugInstall'               \
+        -c ':PlugClean!'                \
+        -c ':q!'                        \
+        -c ':q!' </dev/null >/dev/null  &
+) >/dev/null 2>&1                       &&
 
-export EDITOR ||
+export EDITOR                           ||
 
 return 1
 

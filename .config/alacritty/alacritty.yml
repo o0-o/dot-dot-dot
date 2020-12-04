@@ -5,9 +5,8 @@
 # These configuration files will be loaded in order, replacing values in files
 # loaded earlier with those loaded later in the chain. The file itself will
 # always be loaded last.
-import:
+#import:
 #  - /path/to/alacritty.yml
-  /Users/o0-o/.config/alacritty/arcticicestudio_nord-alacritty/src/nord.yml
 
 # Any items in the `env` entry below will be added as
 # environment variables. Some entries may override variables
@@ -707,13 +706,13 @@ key_bindings:
 
   # (macOS only)
   - { key: K,      mods: Command, mode: ~Vi, chars: "\x0c"            }
-  - { key: Key0,   mods: Command,            action: ResetFontSize    }
-  - { key: Equals, mods: Command,            action: IncreaseFontSize }
-  - { key: Add,    mods: Command,            action: IncreaseFontSize }
-  - { key: Minus,  mods: Command,            action: DecreaseFontSize }
-  - { key: K,      mods: Command,            action: ClearHistory     }
-  - { key: V,      mods: Command,            action: Paste            }
-  - { key: C,      mods: Command,            action: Copy             }
+  - { key: Key0,   mods: Command|Super,      action: ResetFontSize    }
+  - { key: Equals, mods: Command|Super,      action: IncreaseFontSize }
+  #- { key: Add,    mods: Command,            action: IncreaseFontSize }
+  - { key: Minus,  mods: Command|Super,      action: DecreaseFontSize }
+  - { key: K,      mods: Command|Super,      action: ClearHistory     }
+  - { key: V,      mods: Command|Super,      action: Paste            }
+  - { key: C,      mods: Command|Super,      action: Copy             }
   - { key: C,      mods: Command, mode: Vi,  action: ClearSelection   }
   - { key: H,      mods: Command,            action: Hide             }
   - { key: M,      mods: Command,            action: Minimize         }

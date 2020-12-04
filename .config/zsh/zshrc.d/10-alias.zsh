@@ -1,29 +1,33 @@
 ### ALIASES ZSH
 
-declare -a alias_defs=(
+declare -a alias_assignments=(
+
   'cat'   "ccat --bg='dark' --color='auto'" '/dev/null'
   'vi'    'nvim'                            '--version'
   'vim'   'nvim'                            '--version'
-)                                             &&
 
-for command alias test in "${alias_defs[@]}"; do
+)                                                     &&
+
+for the_alias alias_def alias_test in "${alias_assignments[@]}"; do
+  # clear pre-existing alias
+  unalias "${the_alias}"                  2>/dev/null || :
+
   # the command used in alias without options/arguments
-  alias_command="$( printf '%s' "${command}"  |
-                    cut -d ' ' -f '1'
-                  )"                          &&
+  alias_def_cmd="$( printf '%s' "${alias_def}"  |
+                    cut -d ' ' -f '1'             )"  &&
 
   # does alias command exist
-  command -v "${alias_command}"   &>/dev/null &&
-  alias "${command}"="${alias}"               &&
+  command -v "${alias_def_cmd}"           &>/dev/null &&
+  alias "${the_alias}"="${alias_def}"                 &&
 
   # test the alias and unset on failure
-  { "${command}" "${test}"        &>/dev/null ||
-    unalias "${command}"
-  }                                           ||
+  { "${the_alias}" "${alias_test}"        &>/dev/null ||
+    unalias "${the_alias}"
+  }                                                   ||
 
-  # let alias fail if $ALIAS command isn't available
-  ! command -v "${alias_command}" &>/dev/null
-done                                          ||
+  # let alias fail if $alias command isn't available
+  ! command -v "${alias_def_cmd}"         &>/dev/null
+done                                                  ||
 
 return 1
 
