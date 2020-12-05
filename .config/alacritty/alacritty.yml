@@ -19,6 +19,8 @@ env:
   # check the local terminfo database and use `alacritty` if it is
   # available, otherwise `xterm-256color` is used.
   TERM: alacritty
+  # macOS 13.5pt roughly equivlanet to 11pt on Linux
+  WINIT_X11_SCALE_FACTOR: ".81481"
 
 window:
   # Window dimensions (changes require restart)
