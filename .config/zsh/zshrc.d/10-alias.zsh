@@ -5,6 +5,7 @@ declare -a alias_assignments=(
   'cat'   "ccat --bg='dark' --color='auto'" '/dev/null'
   'vi'    'nvim'                            '--version'
   'vim'   'nvim'                            '--version'
+  'sudo'  'sudo '                           '--version'
 
 )                                                       &&
 
