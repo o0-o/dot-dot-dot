@@ -22,6 +22,7 @@
 {
   # use uid as default session
   declare default_tmux_session="${UID-0}"
+  export default_tmux_session
 
   # if no plugins are installed, try installing them before starting the
   # session
@@ -44,7 +45,7 @@
 
   # create new window if other sessions are attached
   tmux ls -F "#S#{?session_attached,attached,}"               |
-  egrep -q "^${default_tmux_session}-[0-9]+attached"          &&
+  egrep -q "^${default_tmux_session}(-[0-9]+)?attached"       &&
   tmux new-session -t "${default_tmux_session}" \; new-window ||
 
   # otherwise attach to existing window
