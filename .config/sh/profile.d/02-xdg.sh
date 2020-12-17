@@ -82,8 +82,8 @@ for compat_bin_dir in "${HOME}/bin"; do
 
 done                                                                  &&
 
-export  XDG_CONFIG_HOME XDG_DATA_DIRS XDG_CONFIG_DIRS XDG_CACHE_HOME  \
-        XDG_RUNTIME_DIR PATH                                          ||
+export  XDG_DATA_HOME XDG_CONFIG_HOME XDG_DATA_DIRS XDG_CONFIG_DIRS \
+        XDG_CACHE_HOME XDG_RUNTIME_DIR PATH                         ||
 
 return 1
 
