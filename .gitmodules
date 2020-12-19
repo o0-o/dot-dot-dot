@@ -10,3 +10,6 @@
 [submodule ".config/tmux/plugins/tpm"]
 	path = .config/tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm.git
+[submodule ".local/share/themes/Dracula"]
+	path = .local/share/themes/Dracula
+	url = https://github.com/dracula/gtk.git
