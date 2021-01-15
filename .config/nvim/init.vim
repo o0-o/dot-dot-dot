@@ -3,8 +3,6 @@ set directory=$XDG_CACHE_HOME/nvim,~/,/tmp
 set backupdir=$XDG_CACHE_HOME/nvim,~/,/tmp
 set viminfo+=n$XDG_CACHE_HOME/nvim/viminfo
 
-" nvim config, mostly taken from lukesmithxyz/voidrice
-
 " junegunn/vim-plug
 call plug#begin(system('printf "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged"'))
   Plug 'tpope/vim-sensible'
@@ -37,7 +35,7 @@ set nocompatible
 filetype plugin on
 syntax on
 set encoding=utf-8
-set number
+set number relativenumber
 set iskeyword-=_
 " Indenting defaults (does not override vim-sleuth's indenting detection)
 if get(g:, '_has_set_default_indent_settings', 0) == 0
@@ -47,23 +45,16 @@ if get(g:, '_has_set_default_indent_settings', 0) == 0
   set shiftwidth=2
   let g:_has_set_default_indent_settings = 1
 endif
-" set expandtab
-" set shiftwidth=2
-" set softtabstop=2
 
-" let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+" Use 24-bit color if possible
 if exists('+termguicolors')
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
   set termguicolors
 endif
-" colorscheme nord
 colorscheme dracula
 highlight Comment cterm=italic gui=italic
 set noshowmode
-"let g:lightline = {
-"      \ 'colorscheme': 'nord',
-"      \ }
 
 set laststatus=2
 
@@ -91,7 +82,6 @@ autocmd BufWritePre * %s/\n\+\%$//e
 
 " indent line
 set list lcs=space:·,trail:·,tab:»·
-"highlight NonText ctermfg=239
 
 " search highlight
 set hlsearch
@@ -110,7 +100,7 @@ let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 let g:airline_symbols_ascii = 1
 let g:airline_section_c = "%<%m %#__accent_red#%{airline#util#wrap(airline#parts#readonly(),0)}%#__restore__#%#__accent_bold#%#__restore__#"
 " let g:airline_powerline_fonts = 1
-"let g:airline_theme='simple'
+" let g:airline_theme='simple'
 
 " supertab
  let g:SuperTabMappingForward = '<s-tab>'
