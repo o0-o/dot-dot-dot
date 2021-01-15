@@ -13,3 +13,6 @@
 [submodule ".local/share/themes/Dracula"]
 	path = .local/share/themes/Dracula
 	url = https://github.com/dracula/gtk.git
+[submodule ".config/alacritty/dracula"]
+	path = .config/alacritty/dracula
+	url = https://github.com/dracula/alacritty.git
