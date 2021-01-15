@@ -2,23 +2,26 @@
 
 ## Automatically start tmux with terminal emulator window
 
+# only autostart from alacritty
+[ "${TERM}" = 'alacritty' ]         &&
+
 # stop if sudo -s
-[ ! "${UID}"  = '0' ]             &&
-[ ! "${EUID}" = '0' ]             &&
+[ ! "${UID}"  = '0' ]               &&
+[ ! "${EUID}" = '0' ]               &&
 
 # stop if already in tmux
-[ -z "${TMUX}" ]                  &&
+[ -z "${TMUX}" ]                    &&
 
 # stop if a session was already auto-started
 # otherwise tmux will restart on exit
-[ -z "${default_tmux_session}" ]  &&
+[ -z "${default_tmux_session}" ]    &&
 
 # stop if in emacs
-[ -z "${INSIDE_EMACS}" ]          &&
-[ -z "${EMACS}" ]                 &&
+[ -z "${INSIDE_EMACS}" ]            &&
+[ -z "${EMACS}" ]                   &&
 
 # stop if in vim
-[ -z "${VIM}" ]                   &&
+[ -z "${VIM}" ]                     &&
 {
   # use uid as default session
   declare default_tmux_session="${UID-0}"
@@ -58,6 +61,7 @@
   'all' &>/dev/null                                                         &)
 
 }                                   ||
+[ ! "${TERM}" = 'alacritty' ]       ||
 [ "${UID}"  = '0' ]                 ||
 [ "${EUID}" = '0' ]                 ||
 [ ! -z "${TMUX}" ]                  ||

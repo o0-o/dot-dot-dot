@@ -2,17 +2,18 @@
 
 declare -a alias_assignments=(
 
-  'cat'   "ccat --bg='dark' --color='auto'" '/dev/null'
-  'vi'    'nvim'                            '--version'
-  'vim'   'nvim'                            '--version'
-  'sudo'  'sudo '                           '--version'
-
+  'cat'   "ccat --bg='dark' --color='auto'" 'ccat /dev/null'
+  'vi'    'nvim'                            'nvim --version'
+  'vim'   'nvim'                            'nvim --version'
+  'sudo'  'nocorrect sudo '                 'nocorrect sudo --version'
+  'tmux'  'TERM=screen-256color tmux'       'tmux -V && infocmp screen-256color'
+  'tmux'  'TERM=tmux-256color tmux'         'tmux -V && infocmp tmux-256color'
 )                                                       &&
 
 for the_alias alias_def alias_test in "${alias_assignments[@]}"; do
 
   # does alias command pass test
-  "${alias_def}" ${alias_test}        &>/dev/null &&
+  eval ${alias_test}                  &>/dev/null &&
   alias "${the_alias}"="${alias_def}"             || :
 
 done                                              ||
