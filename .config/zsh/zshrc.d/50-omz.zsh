@@ -45,7 +45,7 @@
   # DISABLE_AUTO_TITLE="true"
 
   # Uncomment the following line to enable command auto-correction.
-  ENABLE_CORRECTION="true"
+  # ENABLE_CORRECTION="true"
 
   # Uncomment the following line to display red dots whilst waiting for completion.
   COMPLETION_WAITING_DOTS="true"
@@ -101,6 +101,10 @@
   # Example aliases
   # alias zshconfig="mate ~/.zshrc"
   # alias ohmyzsh="mate ~/.oh-my-zsh"
+
+  # omz messes up the $PATH order
+  source "${XDG_CONFIG_HOME-$HOME/.config}/sh/profile.d/00-path.sh"
+  source "${XDG_CONFIG_HOME-$HOME/.config}/sh/profile.d/02-xdg.sh"
 }                 ||
 [ -z "${TMUX-}" ] ||
 return 1

@@ -6,8 +6,7 @@ typeset PATH='/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin' &&
   typeset PATH="/usr/local/opt/openjdk/bin:${PATH}"                         ||
   [ ! -d '/usr/local/opt/openjdk/bin' ]
 }                                                                           &&
-export  PATH                                                                &&
-unalias -a                                                                  ||
+export  PATH                                                                ||
 
 return 1
 
