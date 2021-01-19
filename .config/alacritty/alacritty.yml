@@ -7,7 +7,7 @@
 # always be loaded last.
 import:
 #  - /path/to/alacritty.yml
-  - ~/.config/alacritty/dracula/dracula.yml
+  - ~/.config/alacritty/dracula/dracula.yml # ~ requires version >=0.7.1
 
 # Any items in the `env` entry below will be added as
 # environment variables. Some entries may override variables
@@ -637,10 +637,10 @@ key_bindings:
   #- { key: Copy,                                 action: Copy           }
   #- { key: L,         mods: Control,             action: ClearLogNotice }
   #- { key: L,         mods: Control, mode: ~Vi,  chars: "\x0c"          }
-  #- { key: PageUp,    mods: Shift,   mode: ~Alt, action: ScrollPageUp,  }
-  #- { key: PageDown,  mods: Shift,   mode: ~Alt, action: ScrollPageDown }
-  #- { key: Home,      mods: Shift,   mode: ~Alt, action: ScrollToTop,   }
-  #- { key: End,       mods: Shift,   mode: ~Alt, action: ScrollToBottom }
+  - { key: PageUp,    mods: Shift,   mode: ~Alt, action: ScrollPageUp,  }
+  - { key: PageDown,  mods: Shift,   mode: ~Alt, action: ScrollPageDown }
+  - { key: Home,      mods: Shift,   mode: ~Alt, action: ScrollToTop,   }
+  - { key: End,       mods: Shift,   mode: ~Alt, action: ScrollToBottom }
 
   # Vi Mode
   #- { key: Space,  mods: Shift|Control, mode: Vi, action: ScrollToBottom          }
@@ -692,8 +692,8 @@ key_bindings:
   #- { key: N,      mods: Shift,         mode: Vi, action: SearchPrevious          }
 
   # (Windows, Linux, and BSD only)
-  #- { key: V,        mods: Control|Shift,           action: Paste            }
-  #- { key: C,        mods: Control|Shift,           action: Copy             }
+  - { key: V,        mods: Control|Shift,           action: Paste            }
+  - { key: C,        mods: Control|Shift,           action: Copy             }
   #- { key: F,        mods: Control|Shift,           action: SearchForward    }
   #- { key: B,        mods: Control|Shift,           action: SearchBackward   }
   #- { key: C,        mods: Control|Shift, mode: Vi, action: ClearSelection   }
@@ -708,7 +708,7 @@ key_bindings:
   #- { key: Return,   mods: Alt,           action: ToggleFullscreen }
 
   # (macOS only)
-  - { key: K,      mods: Command, mode: ~Vi, chars: "\x0c"            }
+  #- { key: K,      mods: Command, mode: ~Vi, chars: "\x0c"            }
   - { key: Key0,   mods: Command|Super,      action: ResetFontSize    }
   - { key: Equals, mods: Command|Super,      action: IncreaseFontSize }
   #- { key: Add,    mods: Command,            action: IncreaseFontSize }
@@ -716,7 +716,7 @@ key_bindings:
   - { key: K,      mods: Command|Super,      action: ClearHistory     }
   - { key: V,      mods: Command|Super,      action: Paste            }
   - { key: C,      mods: Command|Super,      action: Copy             }
-  - { key: C,      mods: Command, mode: Vi,  action: ClearSelection   }
+    #- { key: C,      mods: Command, mode: Vi,  action: ClearSelection   }
   - { key: H,      mods: Command,            action: Hide             }
   - { key: M,      mods: Command,            action: Minimize         }
   - { key: Q,      mods: Command,            action: Quit             }
@@ -748,62 +748,3 @@ key_bindings:
 
   # Print all received window events.
   #print_events: false
-# Copyright (c) 2017-present Arctic Ice Studio <development@arcticicestudio.com>
-# Copyright (c) 2017-present Sven Greb <code@svengreb.de>
-
-    ## Project:    Nord Alacritty
-    ## Version:    0.1.0
-    ## Repository: https://github.com/arcticicestudio/nord-alacritty
-    ## License:    MIT
-    ## References:
-    ##   https://github.com/alacritty/alacritty
-    #draw_bold_text_with_bright_colors: true
-    #
-    #colors:
-    #  primary:
-    #    background: '#2e3440'
-    #    foreground: '#d8dee9'
-    #    dim_foreground: '#a5abb6'
-    #  cursor:
-    #    text: '#2e3440'
-    #    cursor: '#d8dee9'
-    #  vi_mode_cursor:
-    #    text: '#2e3440'
-    #    cursor: '#d8dee9'
-    #  selection:
-    #    text: CellForeground
-    #    background: '#4c566a'
-    #  search:
-    #    matches:
-    #      foreground: CellBackground
-    #      background: '#88c0d0'
-    #    bar:
-    #      background: '#434c5e'
-    #      foreground: '#d8dee9'
-    #  normal:
-    #    black: '#3b4252'
-    #    red: '#bf616a'
-    #    green: '#a3be8c'
-    #    yellow: '#ebcb8b'
-    #    blue: '#81a1c1'
-    #    magenta: '#b48ead'
-    #    cyan: '#88c0d0'
-    #    white: '#e5e9f0'
-    #  bright:
-    #    black: '#4c566a'
-    #    red: '#bf616a'
-    #    green: '#a3be8c'
-    #    yellow: '#ebcb8b'
-    #    blue: '#81a1c1'
-    #    magenta: '#b48ead'
-    #    cyan: '#8fbcbb'
-    #    white: '#eceff4'
-    #  dim:
-    #    black: '#373e4d'
-    #    red: '#94545d'
-    #    green: '#809575'
-    #    yellow: '#b29e75'
-    #    blue: '#68809a'
-    #    magenta: '#8c738c'
-    #    cyan: '#6d96a5'
-    #    white: '#aeb3bb'
