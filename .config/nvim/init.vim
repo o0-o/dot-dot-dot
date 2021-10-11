@@ -28,7 +28,7 @@ if exists('+termguicolors') " use 24-bit color if possible
   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
   set termguicolors
 endif
-colorscheme o0-o
+colorscheme o
 
 "indenting defaults (does not override vim-sleuth's indenting detection)
 if get(g:, '_has_set_default_indent_settings', 0) == 0
@@ -49,7 +49,7 @@ set go+=a                   " automatically copy visual selection to clipboard
 set mouse=a               " enable mouse in all modes
 set number relativenumber " relative line numbers and current line number
 let &colorcolumn="73,80"
-autocmd BufEnter * highlight PEPOver ctermbg=white guibg=#2A0415
+autocmd BufEnter * highlight PEPOver ctermbg=white guibg=#430C24
 autocmd BufEnter * match PEPOver /\%80v.*/
 "status line
 set laststatus=2          " always show the status line

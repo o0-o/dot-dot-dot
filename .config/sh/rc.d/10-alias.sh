@@ -1,6 +1,4 @@
-[ "${TERM}" = alacritty ]                                   &&
-alias 'ssh'='TERM=screen-256color ssh'                      ||
-[ ! "${TERM}" = alacritty ]
+alias 'ssh'='TERM=screen-256color ssh'
 
 ln  -sf "$(command which nvim)"                 \
         "${XDG_BIN_HOME-$HOME/.local/bin}/vim"  2>/dev/null &&

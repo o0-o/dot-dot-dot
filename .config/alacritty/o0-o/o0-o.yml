@@ -1,6 +1,6 @@
 colors:
   primary:
-    background: '0x151729'
+    background: '0x131525'
     foreground: '0xF3F3FB'
   cursor:
     text: CellBackground
@@ -14,7 +14,7 @@ colors:
       background: '0x000000'
     focused_match:
       foreground: '0xffffff'
-      background: '0x151729'
+      background: '0x131525'
     bar:
       background: '0x000000'
       foreground: '0xffffff'
@@ -25,40 +25,29 @@ colors:
     text: CellForeground
     background: '0x424460'
   normal:
-    black:   '0x090910'
-    red:     '0xFF0043'
-    green:   '0x00CC00'
-    yellow:  '0xFFA400'
-    blue:    '0x1443FF'
-    magenta: '0xAA48FF'
-    cyan:    '0x00BCFF'
-    white:   '0xF3F3FB'
+    black:   '0x040407' #0  #040407
+    red:     '0xFF0044' #1  #FF0044
+    green:   '0x00E092' #2  #00E092
+    yellow:  '0xFF9100' #3  #FF9100
+    blue:    '0x4A3DFF' #4  #4A3DFF
+    magenta: '0xC400FF' #5  #C400FF
+    cyan:    '0x0088FF' #6  #0088FF
+    white:   '0xF3F3FB' #7  #F3F3FB
   bright:
-    black:   '0x424460'
-    red:     '0xFF6542'
-    green:   '0x22FF1A'
-    yellow:  '0xFFF800'
-    blue:    '0x0080FF'
-    magenta: '0xFF5CE4'
-    cyan:    '0x29FFFF'
-    white:   '0xFFFFFF'
+    black:   '0x424460' #8  #424460
+    red:     '0xFF4D00' #9  #FF4D00
+    green:   '0x7CDB00' #10 #7CDB00
+    yellow:  '0xE0C600' #11 #E0C600
+    blue:    '0x7C0AFF' #12 #7C0AFF
+    magenta: '0xFF00BB' #13 #FF00BB
+    cyan:    '0x00C4EB' #14 #00C4EB
+    white:   '0xFFFFFF' #15 #FFFFFF
   dim:
-    black:   '0x000000'
-    red:     '0x840529'
-    green:   '0x1D7B1D'
-    yellow:  '0x845A1D'
-    blue:    '0x051C87'
-    magenta: '0x84357E'
-    cyan:    '0x198487'
-    white:   '0x717495'
-
-    # very dim
-    #  dim:
-    #    black:   '0x000000'
-    #    red:     '0x4A0019'
-    #    green:   '0x002800'
-    #    yellow:  '0x241700'
-    #    blue:    '0x001860'
-    #    magenta: '0x34004D'
-    #    cyan:    '0x002032'
-    #    white:   '0x424460'
+    black:   '0x000000' #   #000000
+    red:     '0x430C24' #   #430C24
+    green:   '0x202F1A' #   #202F1A
+    yellow:  '0x3E2916' #   #3E2916
+    blue:    '0x120E4C' #   #120E4C
+    magenta: '0x330D4A' #   #330D4A
+    cyan:    '0x0E2939' #   #0E2939
+    white:   '0x2B2D45' #   #2B2D45
