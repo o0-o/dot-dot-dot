@@ -430,7 +430,7 @@ hi! link ErrorMsg     oRedInverse
 hi! link FoldColumn   oSubtle
 hi! link Folded       oBgDimWhite
 hi! link IncSearch    oYellowInverse
-call s:h('LineNr', s:magenta, s:dimmagenta)
+call s:h('LineNr', s:brightblue, s:dimmagenta)
 hi! link MoreMsg      oWhiteBold
 hi! link NonText      oDimWhite
 hi! link Pmenu        oBgDimBlack
@@ -489,13 +489,13 @@ hi! link Boolean Number
 hi! link Float Number
 
 hi! link Identifier oMagenta
-hi! link Function oBrightBlue
+hi! link Function oBrightYellow
 
-hi! link Statement oRed
-hi! link Conditional oGreen
+hi! link Statement oGreen
+hi! link Conditional oBlue
 hi! link Repeat oBrightMagenta
 hi! link Label oBrightMagenta
-hi! link Operator oBrightCyan
+hi! link Operator oYellow
 hi! link Keyword oBrightMagenta
 hi! link Exception oBrightMagenta
 
@@ -512,7 +512,7 @@ hi! link Type oCyan
 
 hi! link Delimiter oBlue
 
-hi! link Special oBrightYellow
+hi! link Special oBrightCyan
 hi! link SpecialComment oBrightBlackBold
 hi! link Tag oCyan
 hi! link helpHyperTextJump oBoldUnderline
