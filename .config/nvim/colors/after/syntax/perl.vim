@@ -1,38 +1,38 @@
-if dracula#should_abort('perl')
+if o#should_abort('perl')
     finish
 endif
 
 " Regex
-hi! link perlMatchStartEnd       DraculaRed
+hi! link perlMatchStartEnd       oRed
 
 " Builtin functions
-hi! link perlOperator            DraculaCyan
-hi! link perlStatementFiledesc   DraculaCyan
-hi! link perlStatementFiles      DraculaCyan
-hi! link perlStatementFlow       DraculaCyan
-hi! link perlStatementHash       DraculaCyan
-hi! link perlStatementIOfunc     DraculaCyan
-hi! link perlStatementIPC        DraculaCyan
-hi! link perlStatementList       DraculaCyan
-hi! link perlStatementMisc       DraculaCyan
-hi! link perlStatementNetwork    DraculaCyan
-hi! link perlStatementNumeric    DraculaCyan
-hi! link perlStatementProc       DraculaCyan
-hi! link perlStatementPword      DraculaCyan
-hi! link perlStatementRegexp     DraculaCyan
-hi! link perlStatementScalar     DraculaCyan
-hi! link perlStatementSocket     DraculaCyan
-hi! link perlStatementTime       DraculaCyan
-hi! link perlStatementVector     DraculaCyan
+hi! link perlOperator            oCyan
+hi! link perlStatementFiledesc   oCyan
+hi! link perlStatementFiles      oCyan
+hi! link perlStatementFlow       oCyan
+hi! link perlStatementHash       oCyan
+hi! link perlStatementIOfunc     oCyan
+hi! link perlStatementIPC        oCyan
+hi! link perlStatementList       oCyan
+hi! link perlStatementMisc       oCyan
+hi! link perlStatementNetwork    oCyan
+hi! link perlStatementNumeric    oCyan
+hi! link perlStatementProc       oCyan
+hi! link perlStatementPword      oCyan
+hi! link perlStatementRegexp     oCyan
+hi! link perlStatementScalar     oCyan
+hi! link perlStatementSocket     oCyan
+hi! link perlStatementTime       oCyan
+hi! link perlStatementVector     oCyan
 
 " Highlighting for quoting constructs, tied to existing option in vim-perl
 if get(g:, 'perl_string_as_statement', 0)
-  hi! link perlStringStartEnd DraculaRed
+  hi! link perlStringStartEnd oRed
 endif
 
 " Signatures
-hi! link perlSignature           DraculaOrangeItalic
-hi! link perlSubPrototype        DraculaOrangeItalic
+hi! link perlSignature           oYellowItalic
+hi! link perlSubPrototype        oYellowItalic
 
 " Hash keys
-hi! link perlVarSimpleMemberName DraculaPurple
+hi! link perlVarSimpleMemberName oBlue

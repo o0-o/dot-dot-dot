@@ -3,7 +3,7 @@
 ## Automatically start tmux with terminal emulator window
 
 # only autostart from alacritty
-[ "${TERM}" = 'alacritty-direct' ]  &&
+[ "${TERM}" = 'alacritty' ]  &&
 
 # stop if sudo -s
 [ ! "${UID}"  = '0' ]               &&

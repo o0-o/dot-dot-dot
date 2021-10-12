@@ -1,16 +1,16 @@
-if dracula#should_abort('tex')
+if o#should_abort('tex')
     finish
 endif
 
-hi! link texBeginEndName  DraculaOrangeItalic
-hi! link texBoldItalStyle DraculaOrangeBoldItalic
-hi! link texBoldStyle     DraculaOrangeBold
-hi! link texInputFile     DraculaOrangeItalic
-hi! link texItalStyle     DraculaYellowItalic
-hi! link texLigature      DraculaPurple
-hi! link texMath          DraculaPurple
-hi! link texMathMatcher   DraculaPurple
-hi! link texMathSymbol    DraculaPurple
-hi! link texSpecialChar   DraculaPurple
-hi! link texSubscripts    DraculaPurple
-hi! link texTitle         DraculaFgBold
+hi! link texBeginEndName  oYellowItalic
+hi! link texBoldItalStyle oYellowBoldItalic
+hi! link texBoldStyle     oYellowBold
+hi! link texInputFile     oYellowItalic
+hi! link texItalStyle     oYellowItalic
+hi! link texLigature      oBlue
+hi! link texMath          oBlue
+hi! link texMathMatcher   oBlue
+hi! link texMathSymbol    oBlue
+hi! link texSpecialChar   oBlue
+hi! link texSubscripts    oBlue
+hi! link texTitle         oFgBold

@@ -48,8 +48,8 @@ set go+=a                   " automatically copy visual selection to clipboard
 " Interface """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set mouse=a               " enable mouse in all modes
 set number relativenumber " relative line numbers and current line number
-let &colorcolumn="73,80"
-autocmd BufEnter * highlight PEPOver ctermbg=white guibg=#430C24
+let &colorcolumn="73"
+autocmd BufEnter * highlight PEPOver ctermbg=52 guibg=#430C24
 autocmd BufEnter * match PEPOver /\%80v.*/
 "status line
 set laststatus=2          " always show the status line

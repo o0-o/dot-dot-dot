@@ -331,14 +331,16 @@ font:
   # When set to `true`, selected text will be copied to the primary clipboard.
   save_to_clipboard: true
 
-#cursor:
+cursor:
   # Cursor style
   #
   # Values for `style`:
   #   - ▇ Block
   #   - _ Underline
   #   - | Beam
-  #style: Block
+  style:
+    blinking: Always
+  blink_interval: 300
 
   # Vi mode cursor style
   #
