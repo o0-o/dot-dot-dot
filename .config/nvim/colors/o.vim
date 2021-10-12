@@ -475,7 +475,7 @@ hi! link Comment oBrightBlackItalic
 hi! link Underlined oUnderline
 hi! link Todo oBrightGreenUnderline
 
-hi! link Error oRedInverse
+hi! link Error oRed
 hi! link SpellBad oRedInverse
 hi! link SpellLocal oYellowInverse
 hi! link SpellCap oCyanInverse
