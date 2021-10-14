@@ -203,17 +203,17 @@
 
   ##################################[ dir: current directory ]##################################
   # Default current directory color.
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=12
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=6
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
   # Replace removed segment suffixes with this symbol.
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER='*'
   # Color of the shortened directory segments.
-  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=5
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=14
   # Color of the anchor directory segments. Anchor segments are never shortened. The first
   # segment is always an anchor.
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=12
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=6
   # Set to true to display anchor directory segments in bold.
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=false
   # Don't shorten directories that contain any of these files. They are anchors.
@@ -326,8 +326,8 @@
   typeset -g POWERLEVEL9K_DIR_CLASSES=()
 
   # Custom prefix/suffix.
-  typeset -g POWERLEVEL9K_DIR_PREFIX='%012F['
-  typeset -g POWERLEVEL9K_DIR_SUFFIX='%012F]'
+  typeset -g POWERLEVEL9K_DIR_PREFIX='%006F['
+  typeset -g POWERLEVEL9K_DIR_SUFFIX='%006F]'
 
 
   #####################################[ vcs: git status ]######################################
