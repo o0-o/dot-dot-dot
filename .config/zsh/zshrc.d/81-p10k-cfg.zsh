@@ -35,10 +35,10 @@
     status                  # exit code of the last command
     newline
     newline
-    dir                     # current directory
-    vcs                     # git status
     context                 # user@hostname
+    dir                     # current directory
     background_jobs         # presence of background jobs
+    vcs                     # git status
     newline
     prompt_char             # prompt symbol
   )
@@ -115,7 +115,7 @@
   typeset -g POWERLEVEL9K_BACKGROUND=                            # transparent background
   typeset -g POWERLEVEL9K_{LEFT,RIGHT}_LEFT_WHITESPACE=''  # no surrounding whitespace
   typeset -g POWERLEVEL9K_{LEFT,RIGHT}_RIGHT_WHITESPACE=''  # no surrounding whitespace
-  typeset -g POWERLEVEL9K_{LEFT,RIGHT}_SUBSEGMENT_SEPARATOR='%008F-'  # separate segments with a space
+  typeset -g POWERLEVEL9K_{LEFT,RIGHT}_SUBSEGMENT_SEPARATOR=' | '  # separate segments with a space
   typeset -g POWERLEVEL9K_{LEFT,RIGHT}_SEGMENT_SEPARATOR=        # no end-of-line symbol
 
   # When set to true, icons appear before content on both sides of the prompt. When set
@@ -153,7 +153,7 @@
   # probably want to set POWERLEVEL9K_PROMPT_ADD_NEWLINE=false above and
   # POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_CHAR=' ' below.
   typeset -g POWERLEVEL9K_SHOW_RULER=false
-  typeset -g POWERLEVEL9K_RULER_CHAR='-'        # reasonable alternative: '·'
+  typeset -g POWERLEVEL9K_RULER_CHAR=' '        # reasonable alternative: '·'
   typeset -g POWERLEVEL9K_RULER_FOREGROUND=7
 
   # Filler between left and right prompt on the first prompt line. You can set it to '·' or '-'
@@ -203,17 +203,18 @@
 
   ##################################[ dir: current directory ]##################################
   # Default current directory color.
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=6
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=0
+  typeset -g POWERLEVEL9K_DIR_BACKGROUND=6
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
   # Replace removed segment suffixes with this symbol.
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER='*'
   # Color of the shortened directory segments.
-  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=14
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=0
   # Color of the anchor directory segments. Anchor segments are never shortened. The first
   # segment is always an anchor.
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=6
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=0
   # Set to true to display anchor directory segments in bold.
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=false
   # Don't shorten directories that contain any of these files. They are anchors.
@@ -326,8 +327,8 @@
   typeset -g POWERLEVEL9K_DIR_CLASSES=()
 
   # Custom prefix/suffix.
-  typeset -g POWERLEVEL9K_DIR_PREFIX='%006F['
-  typeset -g POWERLEVEL9K_DIR_SUFFIX='%006F]'
+  typeset -g POWERLEVEL9K_DIR_PREFIX=' '
+  typeset -g POWERLEVEL9K_DIR_SUFFIX=' '
 
 
   #####################################[ vcs: git status ]######################################
@@ -337,6 +338,10 @@
   # Untracked files icon. It's really a question mark, your font isn't broken.
   # Change the value of this parameter to show a different icon.
   typeset -g POWERLEVEL9K_VCS_UNTRACKED_ICON='?'
+
+  # Custom prefix/suffix.
+  typeset -g POWERLEVEL9K_VCS_PREFIX=' '
+  typeset -g POWERLEVEL9K_VCS_SUFFIX=' '
 
   # Formatter for Git status.
   #
@@ -358,18 +363,18 @@
 
     if (( $1 )); then
       # Styling for up-to-date Git status.
-      local       meta='%f'   # default foreground
-      local      clean='%2F'  # green foreground
-      local   modified='%3F'  # yellow foreground
-      local  untracked='%4F'  # blue foreground
-      local conflicted='%1F'  # red foreground
+      local       meta='%0f'   # default foreground
+      local      clean='%0F'  # green foreground
+      local   modified='%0F'  # yellow foreground
+      local  untracked='%0F'  # blue foreground
+      local conflicted='%0F'  # red foreground
     else
       # Styling for incomplete and stale Git status.
-      local       meta='%f'  # default foreground
-      local      clean='%f'  # default foreground
-      local   modified='%f'  # default foreground
-      local  untracked='%f'  # default foreground
-      local conflicted='%f'  # default foreground
+      local       meta='%0f'  # default foreground
+      local      clean='%0f'  # default foreground
+      local   modified='%0f'  # default foreground
+      local  untracked='%0f'  # default foreground
+      local conflicted='%0f'  # default foreground
     fi
 
     local res
@@ -456,7 +461,7 @@
   typeset -g POWERLEVEL9K_VCS_{STAGED,UNSTAGED,UNTRACKED,CONFLICTED,COMMITS_AHEAD,COMMITS_BEHIND}_MAX_NUM=-1
 
   # Icon color.
-  typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_COLOR=2
+  typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_COLOR=0
   typeset -g POWERLEVEL9K_VCS_LOADING_VISUAL_IDENTIFIER_COLOR=
   # Custom icon.
   typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_EXPANSION=
@@ -470,9 +475,12 @@
 
   # These settings are used for repositories other than Git or when gitstatusd fails and
   # Powerlevel10k has to fall back to using vcs_info.
-  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=2
-  typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=2
-  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=11
+  typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=0
+  typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND=2
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=0
+  typeset -g POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND=14
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=0
+  typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND=11
 
   ##########################[ status: exit code of the last command ]###########################
   # Enable OK_PIPE, ERROR_PIPE and ERROR_SIGNAL status states to allow us to enable, disable and
@@ -511,16 +519,16 @@
   typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_VISUAL_IDENTIFIER_EXPANSION= #'err'
 
   # Custom prefix/suffix.
-  typeset -g POWERLEVEL9K_STATUS_OK_PREFIX='%008F['
-  typeset -g POWERLEVEL9K_STATUS_OK_SUFFIX='%008F]'
-  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_PREFIX='%003F['
-  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_SUFFIX='%003F]'
-  typeset -g POWERLEVEL9K_STATUS_ERROR_PREFIX='%001F['
-  typeset -g POWERLEVEL9K_STATUS_ERROR_SUFFIX='%001F]'
-  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_PREFIX='%001F['
-  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_SUFFIX='%001F]'
-  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_PREFIX='%003F['
-  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_SUFFIX='%003F]'
+  typeset -g POWERLEVEL9K_STATUS_OK_PREFIX=
+  typeset -g POWERLEVEL9K_STATUS_OK_SUFFIX=
+  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_PREFIX=
+  typeset -g POWERLEVEL9K_STATUS_OK_PIPE_SUFFIX=
+  typeset -g POWERLEVEL9K_STATUS_ERROR_PREFIX=
+  typeset -g POWERLEVEL9K_STATUS_ERROR_SUFFIX=
+  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_PREFIX=
+  typeset -g POWERLEVEL9K_STATUS_ERROR_SIGNAL_SUFFIX=
+  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_PREFIX=
+  typeset -g POWERLEVEL9K_STATUS_ERROR_PIPE_SUFFIX=
 
 
   ###################[ command_execution_time: duration of the last command ]###################
@@ -535,19 +543,20 @@
   # Custom icon.
   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_VISUAL_IDENTIFIER_EXPANSION=
   # Custom prefix/suffix.
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_PREFIX='%008F['
-  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_SUFFIX='%008F]'
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_PREFIX=
+  typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_SUFFIX=
 
   #######################[ background_jobs: presence of background jobs ]#######################
   # Don't show the number of background jobs.
   typeset -g POWERLEVEL9K_BACKGROUND_JOBS_VERBOSE=true
   # Background jobs color.
-  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_FOREGROUND=3
+  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_FOREGROUND=0
+  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_BACKGROUND=3
   # Custom icon.
   # typeset -g POWERLEVEL9K_BACKGROUND_JOBS_VISUAL_IDENTIFIER_EXPANSION='⭐'
   # Custom prefix/suffix.
-  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_PREFIX='%003F['
-  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_SUFFIX='%003F]'
+  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_PREFIX=' '
+  typeset -g POWERLEVEL9K_BACKGROUND_JOBS_SUFFIX=' '
 
 
   #######################[ direnv: direnv status (https://direnv.net/) ]########################
@@ -834,16 +843,18 @@
 
   ##################################[ context: user@hostname ]##################################
   # Context color when running with privileges.
-  typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND=1
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND=0
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND=1
   # Context color in SSH without privileges.
-  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_FOREGROUND=7
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_FOREGROUND=0
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_BACKGROUND=7
   # Default context color (no privileges, no SSH).
   typeset -g POWERLEVEL9K_CONTEXT_FOREGROUND=7
 
   # Context format when running with privileges: bold user@hostname.
-  typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE='[%n]'
+  typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE='%n'
   # Context format when in SSH without privileges: user@hostname.
-  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_TEMPLATE= #'%n@%m'
+  typeset -g POWERLEVEL9K_CONTEXT_{REMOTE,REMOTE_SUDO}_TEMPLATE=%n@%m #'%n@%m'
   # Default context format (no privileges, no SSH): user@hostname.
   typeset -g POWERLEVEL9K_CONTEXT_TEMPLATE= #'%n@%m'
 
@@ -854,7 +865,8 @@
   # Custom icon.
   # typeset -g POWERLEVEL9K_CONTEXT_VISUAL_IDENTIFIER_EXPANSION='⭐'
   # Custom prefix.
-  # typeset -g POWERLEVEL9K_CONTEXT_PREFIX='%fwith '
+  typeset -g POWERLEVEL9K_CONTEXT_PREFIX=' '
+  typeset -g POWERLEVEL9K_CONTEXT_SUFFIX=' '
 
   ###[ virtualenv: python virtual environment (https://docs.python.org/3/library/venv.html) ]###
   # Python virtual environment color.
@@ -1502,7 +1514,7 @@
   # Current time color.
   typeset -g POWERLEVEL9K_TIME_FOREGROUND=8
   # Format for the current time: 09:51:02. See `man 3 strftime`.
-  typeset -g POWERLEVEL9K_TIME_FORMAT='%D{[%Y/%m/%d]-[%H:%M:%S]}'
+  typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%Y/%m/%d | %H:%M:%S}'
   # If set to true, time will update when you hit enter. This way prompts for the past
   # commands will contain the start times of their commands as opposed to the default
   # behavior where they contain the end times of their preceding commands.
