@@ -1,4 +1,8 @@
 " vim: ts=2:sw=2:sts=2:et:ft=vim
+"
+" o0-o's personal Neovim configuration.
+"
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " XDG Compliance """""""""""""""""""""""""""""""""""""""""""""""""""""""
 set directory=$XDG_CACHE_HOME/nvim,~/,/tmp
@@ -7,15 +11,15 @@ set viminfo+=n$XDG_CACHE_HOME/nvim/viminfo
 
 " Plugins via junegunn/vim-plug """"""""""""""""""""""""""""""""""""""""
 call plug#begin(system('echo "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged"'))
-  Plug 'tpope/vim-sensible'           " defaults
-  Plug 'tpope/vim-surround'           " manipulate quotes, brackets, tags, etc
-  Plug 'tpope/vim-repeat'             " extend . repeat to plugins
-  Plug 'tpope/vim-sleuth'             " auto-detect indentation
-  Plug 'ervandew/supertab'            " tab completion
-  Plug 'sheerun/vim-polyglot'         " extended syntax detection
-  Plug 'darfink/vim-plist'            " plist encoding support
-  Plug 'vim-airline/vim-airline'      " interface theming
-  Plug 'ap/vim-css-color'             " overlay text representations of colors
+  Plug 'tpope/vim-sensible'       " defaults
+  Plug 'tpope/vim-surround'       " manipulate quotes, brackets, tags, etc
+  Plug 'tpope/vim-repeat'         " extend . repeat to plugins
+  Plug 'tpope/vim-sleuth'         " auto-detect indentation
+  Plug 'ervandew/supertab'        " tab completion
+  Plug 'sheerun/vim-polyglot'     " extended syntax detection
+  Plug 'darfink/vim-plist'        " plist encoding support
+  Plug 'vim-airline/vim-airline'  " interface theming
+  Plug 'ap/vim-css-color'         " overlay text representations of colors
 call plug#end()
 
 " Basics """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -42,7 +46,7 @@ if get(g:, '_has_set_default_indent_settings', 0) == 0
   let g:_has_set_default_indent_settings = 1
 endif
 set showbreak=↪
-set list lcs=space:·,trail:·,tab:•· " whitespace indicators
+set list lcs=space:·,trail:·,tab:│· " whitespace indicators - old tab:•·
 
 " Clipboard """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set clipboard+=unnamedplus  " use system clipboard
@@ -51,9 +55,6 @@ set go+=a                   " automatically copy visual selection to clipboard
 " Interface """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set mouse=a               " enable mouse in all modes
 set number relativenumber " relative line numbers and current line number
-let &colorcolumn="73"     " PEP comment barrier
-autocmd BufEnter * highlight PEPOver ctermbg=52 guibg=#430C24
-autocmd BufEnter * match PEPOver /\%80v.*/
 "status line
 set laststatus=2  " always show the status line
 set noshowmode    " airline handles this for us
