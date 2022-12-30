@@ -15,15 +15,15 @@ colors:
     focused_match:
       foreground: '0xffffff'
       background: '0x131525'
-    bar:
-      background: '0x000000'
-      foreground: '0xffffff'
   line_indicator:
     foreground: None
     background: None
   selection:
     text: CellForeground
     background: '0x424460'
+  footer_bar:
+    background: '0x000000'
+    foreground: '0xffffff'
   normal:
     black:   '0x040407' #0  #040407
     red:     '0xFF0044' #1  #FF0044
