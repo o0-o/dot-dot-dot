@@ -15,6 +15,7 @@ done                          ||
   return 1
 }
 
+autoload -Uz compinit
 # >>>> Vagrant command completion (start)
 fpath=(/opt/vagrant/embedded/gems/2.2.19/gems/vagrant-2.2.19/contrib/zsh $fpath)
 compinit
