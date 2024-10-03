@@ -9,8 +9,14 @@ set directory=$XDG_CACHE_HOME/nvim,~/,/tmp
 set backupdir=$XDG_CACHE_HOME/nvim,~/,/tmp
 set viminfo+=n$XDG_CACHE_HOME/nvim/viminfo
 
+" Install vim-plug if not found
+if empty(glob(system("printf '%s' \"${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged\"")))
+  silent !curl -fLo system("printf '%s' \"${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged\"") --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+
 " Plugins via junegunn/vim-plug """"""""""""""""""""""""""""""""""""""""
-call plug#begin(system('echo "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged"'))
+call plug#begin(system("printf '%s' \"${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vim-plugged\""))
   Plug 'tpope/vim-sensible'       " defaults
 "  Plug 'tpope/vim-surround'       " manipulate quotes, brackets, tags, etc
   Plug 'tpope/vim-repeat'         " extend . repeat to plugins
@@ -18,6 +24,7 @@ call plug#begin(system('echo "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/junegunn_vi
 "  Plug 'ervandew/supertab'        " tab completion
   Plug 'sheerun/vim-polyglot'     " extended syntax detection
   Plug 'darfink/vim-plist'        " plist encoding support
+  Plug 'ssh://anonymous@git.netizen.se/vim-preseed', {'branch': 'main'} " debian preseed highlighting
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
   Plug 'yaegassy/coc-ansible', {'do': 'yarn install --frozen-lockfile'}
   Plug 'vim-airline/vim-airline'  " interface theming
@@ -199,8 +206,8 @@ let g:airline_section_z = airline#section#create(['%Y'])
 set iskeyword-=_                " count underscore as word separator
 set wildmode=longest,list,full  " autocompletion
 "supertab tab completion
-let g:SuperTabMappingForward = '<s-tab>'
-let g:SuperTabMappingBackward = '<s-c-tab>'
+"let g:SuperTabMappingForward = '<s-tab>'
+"let g:SuperTabMappingBackward = '<s-c-tab>'
 "disable automatic commenting on newline
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 "disable indent triggers
@@ -208,6 +215,13 @@ set cinkeys=
 autocmd FileType * setlocal indentkeys=
 "split open at the bottom and right
 set splitbelow splitright
+
+" tmux
+set t_ts=]2;
+set t_fs=\\
+
+set title
+
 "delete trailing whitespace on save
 autocmd BufWritePre * %s/\s\+$//e   "
 autocmd BufWritePre * %s/\n\+\%$//e
