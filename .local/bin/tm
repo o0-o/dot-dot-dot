@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+pwd="$(pwd)"
+
+cd "${1:-pwd}"
+
+tmux new-window
+[ -z ${2-} ] || tmux rename-window "${2}"
+
+while [ "${i:-1}" -lt "${3:-6}" ]; do
+  tmux split-window -h
+  i="$(( ${i:-1} + 1 ))"
+done
+
+tmux select-layout even-horizontal
+tmux select-pane -R
