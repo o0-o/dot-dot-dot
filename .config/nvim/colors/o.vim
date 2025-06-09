@@ -408,7 +408,7 @@ call s:h('oDimWhite', s:dimwhite)
 set background=dark
 
 " Required as some plugins will overwrite
-call s:h('Normal', s:white, g:o_colorterm || has('gui_running') ? s:bg : s:none )
+call s:h('Normal', s:white, g:o_colorterm || has('gui_running') ? s:none : s:none )
 call s:h('StatusLine', s:none, s:brightblack, [s:attrs.bold])
 call s:h('StatusLineNC', s:none, s:dimwhite)
 call s:h('StatusLineTerm', s:none, s:brightblack, [s:attrs.bold])
@@ -416,6 +416,8 @@ call s:h('StatusLineTermNC', s:none, s:dimwhite)
 call s:h('WildMenu', s:bg, s:brightblue, [s:attrs.bold])
 call s:h('CursorLine', s:none, s:dimblack)
 
+hi! link Whitespace   oBrightBlack
+hi! link NonText      Whitespace
 hi! link ColorColumn  oBgSubtle
 hi! link CursorColumn CursorLine
 hi! link CursorLineNr oBrightMagentaInverse
@@ -430,16 +432,16 @@ hi! link ErrorMsg     oRedInverse
 hi! link FoldColumn   oSubtle
 hi! link Folded       oBgDimWhite
 hi! link IncSearch    oYellowInverse
-call s:h('LineNr', s:brightblue, s:dimmagenta)
+hi! link LineNr       oBrightBlack
+"call s:h('LineNr', s:brightblue, s:black)
 hi! link MoreMsg      oWhiteBold
-hi! link NonText      oDimWhite
 hi! link Pmenu        oBgDimBlack
 hi! link PmenuSbar    oBgDimBlack
 hi! link PmenuSel     oYellowInverseBold
 hi! link PmenuThumb   oYellowInverseBold
 hi! link Question     oWhiteBold
 hi! link Search       oUnderline
-call s:h('SignColumn', s:brightblack)
+"call s:h('SignColumn', s:brightblack)
 hi! link TabLine      oBgDimWhite
 hi! link TabLineFill  oBgDimBlack
 hi! link TabLineSel   Normal
@@ -471,7 +473,7 @@ else
   hi! link SpecialKey oDimWhite
 endif
 
-hi! link Comment oBrightBlackItalic
+hi! link Comment oWhiteItalic
 hi! link Underlined oUnderline
 hi! link Todo oBrightGreenUnderline
 
