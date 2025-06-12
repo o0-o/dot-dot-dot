@@ -39,8 +39,12 @@ return {
                             {title = "Treesitter"}
                         )
                         return true
-                    end
-                end,
+                        end
+                        local ft = vim.api.nvim_buf_get_option(buf, "filetype")
+                        if ft == "yaml.ansible" then
+                             return true
+                        end
+                    end,
 
                 -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
                 -- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
