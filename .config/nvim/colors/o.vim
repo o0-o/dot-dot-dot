@@ -415,8 +415,10 @@ call s:h('StatusLineNC', s:none, s:dimwhite)
 call s:h('StatusLineTerm', s:none, s:brightblack, [s:attrs.bold])
 call s:h('StatusLineTermNC', s:none, s:dimwhite)
 call s:h('WildMenu', s:bg, s:brightblue, [s:attrs.bold])
-call s:h('CursorLine', s:none, s:dimblack)
+call s:h('CursorLine', s:none, s:black)
+call s:h('CursorLineNr', s:brightwhite, s:black, [s:attrs.bold])
 
+"hi! link TreesitterContext oBgBlack
 "hi! link yamlPlainScalar oBlue
 "hi! link yamlFlowString oBlue
 "hi! link yamlBool     oCyan
@@ -424,7 +426,7 @@ hi! link Whitespace   oSubtle
 hi! link NonText      Whitespace
 hi! link ColorColumn  oBgSubtle
 hi! link CursorColumn CursorLine
-hi! link CursorLineNr oBrightMagentaInverse
+"hi! link CursorLineNr oBrightMagentaInverse
 hi! link DiffAdd      oGreen
 hi! link DiffAdded    DiffAdd
 hi! link DiffChange   oBrightYellow
@@ -516,7 +518,7 @@ hi! link Typedef oBrightMagenta
 
 hi! link Type oCyan
 
-hi! link Delimiter oBlue
+hi! link Delimiter oMagenta
 
 hi! link Special oBrightCyan
 hi! link SpecialComment oBrightBlackBold
