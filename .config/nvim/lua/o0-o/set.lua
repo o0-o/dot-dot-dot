@@ -1,69 +1,74 @@
-vim.opt.nu = true
-vim.opt.relativenumber = true
-vim.opt.cursorline = true
+-- Line numbering
+vim.opt.nu = true                         -- Show absolute line number
+vim.opt.relativenumber = true            -- Show relative line numbers
 
-vim.opt.smartindent = true
+-- Cursor line highlight
+vim.opt.cursorline = true                -- Highlight the current line
 
-vim.opt.swapfile = false
-vim.opt.backup = false
-vim.opt.undodir = os.getenv('HOME') .. '/.local/share/nvim/undodir'
-vim.opt.undofile = true
+-- Smart indentation
+vim.opt.smartindent = true               -- Automatically insert indents in some cases
 
-vim.opt.hlsearch = false
-vim.opt.incsearch = true
+-- File backup and undo settings
+vim.opt.swapfile = false                 -- Disable swap files
+vim.opt.backup = false                   -- Disable backup files
+vim.opt.undodir = os.getenv('HOME') .. '/.local/share/nvim/undodir' -- Set undo file directory
+vim.opt.undofile = true                  -- Enable persistent undo
 
-vim.opt.termguicolors = true
+-- Search behavior
+vim.opt.hlsearch = false                 -- Don't highlight matches after search
+vim.opt.incsearch = true                 -- Show match while typing search
 
-vim.opt.scrolloff = 8
-vim.opt.signcolumn = 'yes'
-vim.opt.isfname:append('@-@') -- TODO: what is this?
+-- Terminal colors
+vim.opt.termguicolors = true            -- Enable 24-bit RGB color
 
-vim.opt.updatetime = 50
+-- Scrolling and gutter
+vim.opt.scrolloff = 8                    -- Keep 8 lines visible above/below cursor
+vim.opt.signcolumn = 'yes'              -- Always show the sign column
 
-vim.opt.colorcolumn = '80'
+-- Filename character set
+vim.opt.isfname:append('@-@')            -- Allow @ characters in filenames
+-- (Specifically, this makes '@' and '-' treated as part of a filename when jumping or expanding filenames)
 
--- Allow modelines
-vim.opt.modeline = true
+-- Performance
+vim.opt.updatetime = 50                  -- Faster completion & cursor hold events (default is 4000ms)
+
+-- Ruler guide
+vim.opt.colorcolumn = '80'              -- Highlight the 80th column
+
+-- Enable modelines
+vim.opt.modeline = true                 -- Allow file-specific settings at the top/bottom of files
 
 -- Encoding
-vim.opt.encoding = "utf-8"
+vim.opt.encoding = "utf-8"              -- Set default encoding to UTF-8
 
--- Filetype detection and plugins
-vim.cmd("filetype plugin on")
+-- Filetype and syntax
+vim.cmd("filetype plugin on")           -- Enable filetype detection and filetype-specific plugins
+vim.cmd("syntax on")                    -- Enable syntax highlighting
 
--- Syntax highlighting
-vim.cmd("syntax on")
-
--- Use 24-bit color if supported
+-- Termguicolors safety check
 if vim.fn.has("termguicolors") == 1 then
 	vim.opt.termguicolors = true
 end
 
--- Showbreak character for wrapped lines
-vim.opt.showbreak = "↪"
+-- Visual wrapping
+vim.opt.showbreak = "↪"                 -- Character shown before wrapped lines
 
--- Whitespace indicators
-vim.opt.list = true
-vim.opt.listchars = "space:·,trail:·,tab:│ "
+-- Whitespace visibility
+vim.opt.list = true                     -- Show invisible characters
+vim.opt.listchars = "space:·,trail:·,tab:│ " -- Define characters for whitespace indicators
 
--- Enable mouse in all modes
-vim.opt.mouse = "a"
+-- Mouse
+vim.opt.mouse = "a"                     -- Enable mouse support in all modes
 
--- Always show status line
-vim.opt.laststatus = 2
+-- Status line
+vim.opt.laststatus = 2                  -- Always show the status line
 
--- Hide default mode display (e.g. -- INSERT --)
-vim.opt.showmode = false
+-- Mode display
+vim.opt.showmode = false                -- Don't show default mode text like "-- INSERT --"
 
--- Count underscores as word separators (i.e., not part of word)
-vim.opt.iskeyword:remove("_")
+-- Completion behavior
+vim.opt.wildmode = "longest,list,full"  -- Configure command-line completion behavior
 
--- Autocompletion behavior
-vim.opt.wildmode = "longest,list,full"
-
--- Window split behavior
-vim.opt.splitbelow = true
-vim.opt.splitright = true
-
--- Enable setting terminal title
-vim.opt.title = true
+-- Window split behavior (replicate tmux)
+vim.opt.splitbelow = true               -- Open horizontal splits below
+vim.opt.splitright = true               -- Open vertical splits to the right

@@ -1,91 +1,98 @@
 return {
     {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function()
-        require("nvim-treesitter.configs").setup({
-            -- A list of parser names, or "all"
-            ensure_installed = {
-                "vimdoc", "javascript", "typescript", "c", "lua", "rust",
-                "jsdoc", "bash", "go",
-            },
+        "nvim-treesitter/nvim-treesitter", -- Main Treesitter plugin for syntax highlighting and parsing
 
-            -- Install parsers synchronously (only applied to `ensure_installed`)
-            sync_install = false,
+        build = ":TSUpdate", -- Run :TSUpdate after install to ensure parsers are up to date
 
-            -- Automatically install missing parsers when entering buffer
-            -- Recommendation: set to false if you don"t have `tree-sitter` CLI installed locally
-            auto_install = true,
+        config = function()
+            require("nvim-treesitter.configs").setup({
+                -- ensure_installed = { ... }: optionally specify parsers to ensure are installed
+                -- Leave commented to install on demand
 
-            indent = {
-                enable = true
-            },
+                sync_install = false, -- Don't block UI while installing parsers
+                auto_install = true,  -- Automatically install missing parsers on buffer enter
 
-            highlight = {
-                -- `false` will disable the whole extension
-                enable = true,
-                disable = function(lang, buf)
-                    if lang == "html" then
-                        print("disabled")
-                        return true
-                    end
+                indent = {
+                    enable = true, -- Enable Treesitter-based indentation
+                },
 
-                    local max_filesize = 100 * 1024 -- 100 KB
-                    local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-                    if ok and stats and stats.size > max_filesize then
-                        vim.notify(
-                            "File larger than 100KB treesitter disabled for performance",
-                            vim.log.levels.WARN,
-                            {title = "Treesitter"}
-                        )
-                        return true
+                highlight = {
+                    enable = true, -- Enable syntax highlighting via Treesitter
+
+                    -- Disable for large files, HTML (manually), or Ansible YAML
+                    disable = function(lang, buf)
+                        if lang == "html" then
+                            print("disabled")
+                            return true
                         end
+
+                        local max_filesize = 100 * 1024 -- 100 KB
+                        local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                        if ok and stats and stats.size > max_filesize then
+                            vim.notify(
+                                "File larger than 100KB — Treesitter disabled for performance",
+                                vim.log.levels.WARN,
+                                { title = "Treesitter" }
+                            )
+                            return true
+                        end
+
                         local ft = vim.api.nvim_buf_get_option(buf, "filetype")
                         if ft == "yaml.ansible" then
-                             return true
+                            return true
                         end
                     end,
 
-                -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-                -- Set this to `true` if you depend on "syntax" being enabled (like for indentation).
-                -- Using this option may slow down your editor, and you may see some duplicate highlights.
-                -- Instead of true it can also be a list of languages
-                additional_vim_regex_highlighting = { "markdown" },
-            },
-        })
+                    additional_vim_regex_highlighting = { "markdown" }, -- Use both regex and Treesitter for markdown
+                },
+            })
 
-        local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-        treesitter_parser_config.templ = {
-            install_info = {
-                url = "https://github.com/vrischmann/tree-sitter-templ.git",
-                files = {"src/parser.c", "src/scanner.c"},
-                branch = "master",
-            },
-        }
+            -- Register custom Treesitter parser for `templ` (templating language for Go)
+            local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+            treesitter_parser_config.templ = {
+                install_info = {
+                    url = "https://github.com/vrischmann/tree-sitter-templ.git",
+                    files = { "src/parser.c", "src/scanner.c" },
+                    branch = "master",
+                },
+            }
 
-        vim.treesitter.language.register("templ", "templ")
-    end
+            -- Associate .templ files with the `templ` parser
+            vim.treesitter.language.register("templ", "templ")
+        end,
     },
 
     {
-        "nvim-treesitter/nvim-treesitter-context",
+        "nvim-treesitter/nvim-treesitter-context", -- Shows current code context at top of window
         after = "nvim-treesitter",
+
         config = function()
-            require'treesitter-context'.setup{
-                enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
-                multiwindow = false, -- Enable multiwindow support.
-                max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
-                min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
-                line_numbers = true,
-                multiline_threshold = 20, -- Maximum number of lines to show for a single context
-                trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-                mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
-                -- Separator between context and content. Should be a single character string, like '-'.
-                -- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
-                separator = nil,
-                zindex = 20, -- The Z-index of the context window
-                on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
-            }
-        end
-    }
+            require("treesitter-context").setup({
+                enable = true,             -- Enable plugin
+                multiwindow = false,       -- Don't show context across split windows
+                max_lines = 0,             -- Unlimited context lines
+                min_window_height = 0,     -- Always show context regardless of window height
+                line_numbers = true,       -- Show line numbers in context
+                multiline_threshold = 20,  -- Collapse context if block > 20 lines
+                trim_scope = "outer",      -- Prefer to keep outer context when trimming
+                mode = "cursor",           -- Use cursor position for determining context
+                separator = nil,           -- No separator line
+                zindex = 20,               -- Display above normal text
+                on_attach = nil,           -- No special attach behavior
+
+                -- Match nodes by type to display in the context window
+                patterns = {
+                    default = {
+                        "class_definition",
+                        "function_definition",
+                        "method_definition",
+                        "if_statement",
+                        "for_statement",
+                        "while_statement",
+                        "case_clause",
+                    },
+                },
+            })
+        end,
+    },
 }

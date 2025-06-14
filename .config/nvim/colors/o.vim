@@ -417,8 +417,33 @@ call s:h('StatusLineTermNC', s:none, s:dimwhite)
 call s:h('WildMenu', s:bg, s:brightblue, [s:attrs.bold])
 call s:h('CursorLine', s:none, s:black)
 call s:h('CursorLineNr', s:brightwhite, s:black, [s:attrs.bold])
+call s:h('FoldColumn', s:white, s:none)
+call s:h('Folded', s:white, s:none)
 
-"hi! link TreesitterContext oBgBlack
+call s:h('TabLineFill', s:none, s:none)
+call s:h('TabLine', s:white, s:none)
+call s:h('TabLineMod', s:white, s:none, [s:attrs.italic])
+call s:h('TabLineSel', s:black, s:blue, [s:attrs.bold])
+call s:h('TabLineSelMod', s:black, s:blue, [s:attrs.bold, s:attrs.italic])
+"call s:h('BufferLineBackground', s:none, s:bg)
+"call s:h('BufferLineBufferSelected', s:black, s:blue)
+"call s:h('BufferLineBufferVisible', s:none, s:bg)
+"call s:h('BufferLineBuffer', s:none, s:bg)
+"call s:h('BufferLineFill', s:none, s:bg)
+"call s:h('BufferLineIndicatorSelected', s:none, s:blue)
+"call s:h('BufferLineIndicatorVisible', s:none, s:blue)
+"call s:h('BufferLineIndicator', s:none, s:blue)
+"call s:h('BufferLineNumbersSelected', s:black, s:blue)
+"
+"" Optional: clear tab fill background as well
+"call s:h('BufferLineFill', s:none, s:bg)
+
+"highlight BufferLineFill guibg=NONE guifg=NONE
+
+
+hi! link TreesitterContext None
+"hi! link TreesitterContextLineNumber oBgSubtle
+hi! link TreesitterContextBottom oUnderline
 "hi! link yamlPlainScalar oBlue
 "hi! link yamlFlowString oBlue
 "hi! link yamlBool     oCyan
@@ -435,8 +460,7 @@ hi! link DiffRemoved  DiffDelete
 hi! link DiffText     oBlue
 hi! link Directory    oBrightBlueBold
 hi! link ErrorMsg     oRedInverse
-hi! link FoldColumn   oSubtle
-hi! link Folded       oBgDimWhite
+"hi! link Folded       oBgDimWhite
 hi! link IncSearch    oYellowInverse
 hi! link LineNr       oBrightBlack
 "call s:h('LineNr', s:brightblue, s:black)
@@ -448,12 +472,10 @@ hi! link PmenuThumb   oYellowInverseBold
 hi! link Question     oWhiteBold
 hi! link Search       oUnderline
 "call s:h('SignColumn', s:brightblack)
-hi! link TabLine      oBgDimWhite
-hi! link TabLineFill  oBgDimBlack
-hi! link TabLineSel   Normal
+"hi! link TabLine      oBgDimWhite
 hi! link Title        oGreenBold
 hi! link VertSplit    oBgDimWhite
-hi! link Visual       oBgSubtle
+hi! link Visual       oBgBlack
 hi! link VisualNOS    Visual
 hi! link WarningMsg   oYellowInverse
 

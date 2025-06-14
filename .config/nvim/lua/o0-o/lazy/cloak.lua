@@ -1,21 +1,28 @@
 return {
+	-- Automatically hides sensitive values in files like `.env` using a masking character
 	"laytan/cloak.nvim",
-	config = function() 
+	enabled = true,
+	config = function()
 		require("cloak").setup({
+			-- Master toggle (you can disable it globally if needed)
 			enabled = true,
+
+			-- Character used to mask/cloak the secret values
 			cloak_character = "*",
-			-- The applied highlight group (colors) on the cloaking, see `:h highlight`.
+
+			-- Highlight group to style the cloaked text (e.g., gray like comments)
 			highlight_group = "Comment",
+
+			-- Define which files and patterns should have secrets cloaked
 			patterns = {
 				{
-					-- Match any file starting with ".env".
-					-- This can be a table to match multiple file patterns.
+					-- Target files that start with ".env" (e.g., .env, .env.local, .env.production)
 					file_pattern = {
 						".env*",
 					},
-					-- Match an equals sign and any character after it.
-					-- This can also be a table of patterns to cloak,
-					-- example: cloak_pattern = { ":.+", "-.+" } for yaml files.
+
+					-- Regex pattern that matches everything after the `=`
+					-- Example: DB_PASSWORD=mysecret → cloaks `=mysecret`
 					cloak_pattern = "=.+"
 				},
 			},

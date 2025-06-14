@@ -1,4 +1,0 @@
-{
-  "snippets.ultisnips.pythonPrompt": false,
-  "ansible.validation.lint.arguments": "-x 'command-instead-of-module,name[template],name[casing],jinja[spacing],yaml[comments],403,no-handler,no-changed-when,var-naming[no-role-prefix]'"
-}
