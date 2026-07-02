@@ -1,0 +1,8 @@
+# BASH PROFILE (minimal) — shared config lives in ~/.config/sh
+
+for PROFILE in "${XDG_CONFIG_HOME:-$HOME/.config}/sh/profile.d/"*.sh; do
+  source "${PROFILE}" ||
+  printf 'BASH_PROFILE: An error occured in %s\n' "${PROFILE##*/}" >&2
+done
+
+HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/bash/bash_history"
