@@ -2,9 +2,8 @@
 
 ## Automatically start tmux with terminal emulator window
 
-# only autostart from alacritty
-{ [ "${TERM}" = 'alacritty' ] ||
-  [ "${TERM}" = 'xterm-kitty' ]; }  &&
+# only autostart from kitty
+[ "${TERM}" = 'xterm-kitty' ]       &&
 
 # stop if sudo -s
 [ ! "${UID}"  = '0' ]               &&
@@ -62,9 +61,7 @@
   'all' &>/dev/null                                                         &)
 
 }                                   ||
-{ [ "${TERM}" != 'alacritty' ] &&
-  [ "${TERM}" != 'xterm-kitty' ]; } ||
-[ "${TERM}" = 'alacritty' ]         ||
+[ "${TERM}" != 'xterm-kitty' ]      ||
 [ "${UID}"  = '0' ]                 ||
 [ "${EUID}" = '0' ]                 ||
 [ ! -z "${TMUX}" ]                  ||
