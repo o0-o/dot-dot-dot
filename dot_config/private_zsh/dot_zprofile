@@ -3,16 +3,10 @@
 # PATH may not be configure yet, so use full path commands
 # except for built-ins
 
-# XDG may not be configured yet, so use relative path
-declare ZPROFILE_PATH="$(
-  /usr/bin/dirname "$(  /usr/bin/readlink "${HOME}/.zprofile" ||
-                        printf '%s' "${HOME}/.zprofile"
-                     )"
-)"    &&
-
+# ZDOTDIR is set by ~/.zshenv
 # sort and source sh (generic) and zsh profile configurations
-for PROFILE in $( { /bin/ls -d "${ZPROFILE_PATH}/../sh/profile.d/"*
-                    /bin/ls -d "${ZPROFILE_PATH}/zprofile.d/"*
+for PROFILE in $( { /bin/ls -d "${ZDOTDIR}/../sh/profile.d/"*
+                    /bin/ls -d "${ZDOTDIR}/zprofile.d/"*
                   } 2>/dev/null   |
                     /usr/bin/sort |
                     /usr/bin/tr '\n' ' '
@@ -26,6 +20,3 @@ done  ||
 }
 
 return 0
-
-# Added by Obsidian
-export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"

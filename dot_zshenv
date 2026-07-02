@@ -1,0 +1,2 @@
+# ZSHENV — point zsh at its XDG config dir; everything else lives there
+export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
