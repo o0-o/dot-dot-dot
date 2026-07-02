@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+# safety first
+set -euo pipefail
+
+[ ! -z "${1-}" ] &&
+  IP="${1}"     ||
+  IP="$( ifconfig                                |
+           awk '/^[[:space:]]*inet / {print $2}' |
+           grep -m 1 -v "^127"
+       )"
+
+dig -x "${IP}" +noall +answer | awk '/^[0-9]/ { print $NF }' | sed 's/\.$//'
+
+exit $?

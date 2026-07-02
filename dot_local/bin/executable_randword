@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+set -eu
+
+set -o pipefail || true
+set -o posix || true
+
+grep -oE '^[a-z]{8}$' /usr/share/dict/words | shuf | head -n 1

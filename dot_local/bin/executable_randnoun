@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+set -eu
+
+set -o pipefail || true
+set -o posix || true
+
+grep -oE '^[a-z]{8}$' /usr/share/dict/words |
+shuf                                        |
+while read -r w; do
+  dict "$w" 2>/dev/null |
+  grep -q ', n.$'       &&
+  echo "$w"             &&
+  break                 ||
+  true;
+done
