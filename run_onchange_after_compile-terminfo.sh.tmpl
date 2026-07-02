@@ -1,0 +1,6 @@
+#!/bin/sh
+# Compile tmux-256color into ~/.terminfo (macOS ncurses lacks it).
+# Re-runs whenever the terminfo source changes:
+# hash: {{ include "dot_config/tmux/tmux-256color.terminfo" | sha256sum }}
+
+tic -x "${HOME}/.config/tmux/tmux-256color.terminfo"
