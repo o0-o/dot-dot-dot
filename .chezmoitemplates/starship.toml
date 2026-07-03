@@ -1,12 +1,27 @@
 # Starship prompt — faithful port of the previous powerlevel10k lean
-# 8-color config (ascii): gray "date | time | duration | status" line,
-# then context/dir/jobs/git as black-on-color blocks, then a magenta
-# prompt char that tracks vi mode (> insert, < normal, V visual, ^ replace).
+# 8-color config: gray "date | time | duration | status" line, then
+# context/dir/jobs/git as black-on-color blocks, then a magenta prompt
+# char that tracks vi mode (insert, normal, V visual, ^ replace).
 #
-# Known deviations from p10k: no transient prompt, exit code hidden when
-# zero, git block is green(branch)+bright-yellow(status) instead of one
-# block recolored by state, and truncation is fish-style rather than
-# truncate-to-unique.
+# Rendered from .chezmoitemplates/starship.toml in two variants:
+# starship.toml (unicode) and starship-ascii.toml (fallback; selected
+# by .zshrc when the locale isn't UTF-8 or PROMPT_ASCII is set).
+{{- $pipe := "|" -}}
+{{- $lock := "ro" -}}
+{{- $branch := "" -}}
+{{- $ahead := ">" -}}
+{{- $behind := "<" -}}
+{{- $chevron := ">" -}}
+{{- $chevleft := "<" -}}
+{{- if .unicode -}}
+{{- $pipe = "│" -}}
+{{- $lock = "" -}}
+{{- $branch = " " -}}
+{{- $ahead = "⇡" -}}
+{{- $behind = "⇣" -}}
+{{- $chevron = "❯" -}}
+{{- $chevleft = "❮" -}}
+{{- end }}
 
 add_newline = false
 
@@ -19,22 +34,22 @@ $character"""
 [time]
 disabled = false
 format = '[$time]($style)'
-time_format = '%Y/%m/%d | %H:%M:%S'
+time_format = '%Y/%m/%d {{ $pipe }} %H:%M:%S'
 style = 'bright-black'
 
 # duration is computed and formatted by a zsh precmd hook (stopwatch
 # style, ms precision) — starship's own cmd_duration can't do this
 [env_var.CMD_DUR_FMT]
-format = '[ | $env_value]($style)'
+format = '[ {{ $pipe }} $env_value]($style)'
 style = 'bright-black'
 
 [status]
 disabled = false
-format = '[ | ](bright-black)[$status]($style)'
+format = '[ {{ $pipe }} ](bright-black)[$status]($style)'
 style = 'red'
 pipestatus = true
-pipestatus_format = '[ | ](bright-black)[$pipestatus => $status]($style)'
-pipestatus_separator = '|'
+pipestatus_format = '[ {{ $pipe }} ](bright-black)[$pipestatus => $status]($style)'
+pipestatus_separator = '{{ $pipe }}'
 
 [username]
 format = '[ $user]($style)'
@@ -49,7 +64,7 @@ style = 'fg:black bg:white'
 [directory]
 format = '[ $path ]($style)[$read_only]($read_only_style) '
 style = 'fg:black bg:blue'
-read_only = 'ro'
+read_only = '{{ $lock }}'
 read_only_style = 'fg:black bg:red'
 truncation_length = 8
 fish_style_pwd_dir_length = 1
@@ -62,7 +77,7 @@ symbol_threshold = 1
 number_threshold = 1
 
 [git_branch]
-format = '[ $branch ]($style)'
+format = '[ {{ $branch }}$branch ]($style)'
 style = 'fg:black bg:green'
 only_attached = false
 
@@ -73,9 +88,9 @@ style = 'fg:black bg:red'
 [git_status]
 format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style))'
 style = 'fg:black bg:bright-yellow'
-ahead = '>${count} '
-behind = '<${count} '
-diverged = '<${behind_count} >${ahead_count} '
+ahead = '{{ $ahead }}${count} '
+behind = '{{ $behind }}${count} '
+diverged = '{{ $behind }}${behind_count} {{ $ahead }}${ahead_count} '
 stashed = '*${count} '
 conflicted = '~${count} '
 staged = '+${count} '
@@ -84,9 +99,9 @@ untracked = '?${count} '
 deleted = 'x${count} '
 
 [character]
-success_symbol = '[>](bright-purple)'
-error_symbol = '[>](bright-purple)'
-vimcmd_symbol = '[<](bright-purple)'
+success_symbol = '[{{ $chevron }}](bright-purple)'
+error_symbol = '[{{ $chevron }}](bright-purple)'
+vimcmd_symbol = '[{{ $chevleft }}](bright-purple)'
 vimcmd_visual_symbol = '[V](bright-purple)'
 vimcmd_replace_symbol = '[^](bright-purple)'
 vimcmd_replace_one_symbol = '[^](bright-purple)'

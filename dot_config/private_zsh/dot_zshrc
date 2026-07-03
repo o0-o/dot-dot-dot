@@ -129,6 +129,19 @@ if [ -n "${TMUX-}" ]; then
   unset fsh
 
   if command -v starship >/dev/null 2>&1; then
+    # ascii prompt when the locale can't do unicode, or on demand
+    # (PROMPT_ASCII=1) for terminals without the fancy glyphs
+    if [ -n "${PROMPT_ASCII-}" ]; then
+      export STARSHIP_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/starship-ascii.toml"
+    else
+      case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+        (*[Uu][Tt][Ff]-8*|*[Uu][Tt][Ff]8*) ;;
+        (*)
+          export STARSHIP_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/starship-ascii.toml"
+        ;;
+      esac
+    fi
+
     # stopwatch-style command duration (0.333, 1:05.123, 1:02:03.456)
     # exported for starship's env_var module — its cmd_duration can't
     # format sub-second precision
