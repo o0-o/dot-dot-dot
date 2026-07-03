@@ -15,24 +15,15 @@ HISTSIZE=50000
 SAVEHIST=50000
 setopt SHARE_HISTORY
 
-# up/down arrows browse this shell's history; everything else is shared
-# (superuser.com/questions/446594)
-up-line-or-local-history() {
-  zle set-local-history 1
-  zle up-line-or-history
-  zle set-local-history 0
-}
-down-line-or-local-history() {
-  zle set-local-history 1
-  zle down-line-or-history
-  zle set-local-history 0
-}
-zle -N up-line-or-local-history
-zle -N down-line-or-local-history
-bindkey '^[OA' up-line-or-local-history
-bindkey '^[OB' down-line-or-local-history
-bindkey '^[[A' up-line-or-local-history
-bindkey '^[[B' down-line-or-local-history
+# up/down arrows prefix-search history (type a prefix, then arrow);
+# Esc-k/j in vi command mode walks the full history unfiltered
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[OA' up-line-or-beginning-search
+bindkey '^[OB' down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search
 
 ## Vi mode (replaces the omz vi-mode plugin)
 bindkey -v
@@ -68,7 +59,14 @@ fi
 autoload -Uz compinit
 zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
 [ -d "${zcompdump%/*}" ] || install -m '700' -d "${zcompdump%/*}"
-compinit -d "${zcompdump}"
+# root inherits our HOME/ZDOTDIR under `sudo -s` and flags our uid-owned fpath
+# dirs as insecure; -u uses them without the check only there, where passwordless
+# sudo already collapses the user→root boundary it guards. Our own shell keeps it.
+if [ "$EUID" -eq 0 ]; then
+  compinit -u -d "${zcompdump}"
+else
+  compinit -d "${zcompdump}"
+fi
 unset zcompdump
 # case- and hyphen-insensitive matching, menu selection
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}'
@@ -142,6 +140,15 @@ if [ -n "${TMUX-}" ]; then
       esac
     fi
 
+    # context tag: root or remote session, static per shell (unset first
+    # so nested shells don't inherit a stale state)
+    unset PROMPT_CTX_ROOT PROMPT_CTX_REMOTE
+    if [ "${EUID}" = '0' ]; then
+      export PROMPT_CTX_ROOT="${USERNAME:-root}"
+    elif [ -n "${SSH_CONNECTION-}" ] || [ -n "${SSH_TTY-}" ]; then
+      export PROMPT_CTX_REMOTE="${USERNAME}@${HOST%%.*}"
+    fi
+
     # stopwatch-style command duration (0.333, 1:05.123, 1:02:03.456)
     # exported for starship's env_var module — its cmd_duration can't
     # format sub-second precision
@@ -172,6 +179,67 @@ if [ -n "${TMUX-}" ]; then
     }
     add-zsh-hook preexec duration-preexec
     add-zsh-hook precmd duration-precmd
+
+    # state-colored git segment (p10k style): parse git status once per
+    # prompt and export exactly one GIT_SEG_* variable; starship renders
+    # it via env_var modules, one per state color
+    typeset -g __git_sym_ahead='' __git_sym_behind='' \
+      __git_sym_stash='' __git_sym_conflict='' \
+      __git_sym_staged='' __git_sym_unstaged='' \
+      __git_sym_untracked=''
+    if [ -n "${STARSHIP_CONFIG-}" ]; then
+      __git_sym_ahead='>' __git_sym_behind='<' __git_sym_stash='*' \
+      __git_sym_conflict='~' __git_sym_staged='+' __git_sym_unstaged='!' \
+      __git_sym_untracked='?'
+    fi
+    git-seg-precmd() {
+      unset GIT_SEG_CLEAN GIT_SEG_MODIFIED GIT_SEG_UNTRACKED GIT_SEG_CONFLICT
+      local out
+      out="$(git --no-optional-locks status --porcelain=v2 --branch \
+             --show-stash 2>/dev/null)" ||
+      return 0
+
+      local line branch='' oid='' ab=''
+      local -i ahead=0 behind=0 stash=0
+      local -i staged=0 unstaged=0 untracked=0 conflicted=0
+      while IFS= read -r line; do
+        case "${line}" in
+          ('# branch.head '*) branch="${line#\# branch.head }" ;;
+          ('# branch.oid '*)  oid="${line#\# branch.oid }" ;;
+          ('# branch.ab '*)
+            ab="${line#\# branch.ab }"
+            ahead="${${ab%% *}#+}"
+            behind="${${ab##* }#-}" ;;
+          ('# stash '*) stash="${line#\# stash }" ;;
+          ('u '*) (( conflicted++ )) ;;
+          ('1 '*|'2 '*)
+            [ "${line[3]}" != '.' ] && (( staged++ ))
+            [ "${line[4]}" != '.' ] && (( unstaged++ )) ;;
+          ('? '*) (( untracked++ )) ;;
+        esac
+      done <<< "${out}"
+
+      [ "${branch}" = '(detached)' ] && branch="@${oid[1,8]}"
+      local seg="${branch}"
+      (( behind ))     && seg+=" ${__git_sym_behind}${behind}"
+      (( ahead ))      && seg+=" ${__git_sym_ahead}${ahead}"
+      (( stash ))      && seg+=" ${__git_sym_stash}${stash}"
+      (( conflicted )) && seg+=" ${__git_sym_conflict}${conflicted}"
+      (( staged ))     && seg+=" ${__git_sym_staged}${staged}"
+      (( unstaged ))   && seg+=" ${__git_sym_unstaged}${unstaged}"
+      (( untracked ))  && seg+=" ${__git_sym_untracked}${untracked}"
+
+      if (( conflicted )); then
+        export GIT_SEG_CONFLICT="${seg}"
+      elif (( staged || unstaged )); then
+        export GIT_SEG_MODIFIED="${seg}"
+      elif (( untracked )); then
+        export GIT_SEG_UNTRACKED="${seg}"
+      else
+        export GIT_SEG_CLEAN="${seg}"
+      fi
+    }
+    add-zsh-hook precmd git-seg-precmd
 
     eval "$(starship init zsh)"
   fi

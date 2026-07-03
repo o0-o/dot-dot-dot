@@ -9,22 +9,22 @@
 {{- $pipe := "|" -}}
 {{- $lock := "ro" -}}
 {{- $branch := "" -}}
-{{- $ahead := ">" -}}
-{{- $behind := "<" -}}
 {{- $chevron := ">" -}}
 {{- $chevleft := "<" -}}
 {{- $point := "" -}}
 {{- $pointl := "" -}}
-{{- $pad := " " -}}
+{{- $gap := " " -}}
+{{- $sep := "--" -}}
+{{- $gear := "+" -}}
 {{- if .unicode -}}
+{{- $sep = "──" -}}
+{{- $gear = " " -}}
 {{- $pipe = "│" -}}
 {{- $lock = "" -}}
-{{- $branch = " " -}}
-{{- $ahead = "⇡" -}}
-{{- $behind = "⇣" -}}
+{{- $branch = " " -}}
 {{- $chevron = "❯" -}}
 {{- $chevleft = "❮" -}}
-{{- $pad = "" -}}
+{{- $gap = "" -}}
 {{- $point = "" -}}
 {{- $pointl = "" -}}
 {{- end }}
@@ -35,82 +35,86 @@ add_newline = false
 format = """
 $time${env_var.CMD_DUR_FMT}$status
 
-[╭─](bright-black)$username$hostname$directory$jobs$git_branch$git_state$git_status
+[╭─](bright-black) ${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
 [╰─](bright-black)$character"""
 {{- else -}}
 format = """
 $time${env_var.CMD_DUR_FMT}$status
 
-$username$hostname$directory$jobs$git_branch$git_state$git_status
+${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
 $character"""
 {{- end }}
 
 [time]
 disabled = false
 format = '[$time]($style)'
-time_format = '%Y/%m/%d {{ $pipe }} %H:%M:%S'
+time_format = '%Y/%m/%d {{ $sep }} %H:%M:%S'
 style = 'bright-black'
 
 # duration is computed and formatted by a zsh precmd hook (stopwatch
 # style, ms precision) — starship's own cmd_duration can't do this
 [env_var.CMD_DUR_FMT]
-format = '[ {{ $pipe }} $env_value]($style)'
+format = '[ {{ $sep }} $env_value]($style)'
 style = 'bright-black'
 
 [status]
 disabled = false
-format = '[ {{ $pipe }} ](bright-black)[$status]($style)'
+format = '[ {{ $sep }} ](bright-black)[$status]($style)'
 style = 'red'
 pipestatus = true
-pipestatus_format = '[ {{ $pipe }} ](bright-black)[$pipestatus => $status]($style)'
-pipestatus_separator = '{{ $pipe }}'
+pipestatus_format = '[ {{ $sep }} ](bright-black)$pipestatus'
+pipestatus_segment_format = '[$status]($style)'
+pipestatus_separator = '[{{ $pipe }}](bright-black)'
 
-[username]
-format = '[{{ $pad }}$user]($style)'
-style_user = 'fg:black bg:white'
-style_root = 'fg:black bg:red'
+# context tag: exported by .zshrc when the shell is root or remote
+[env_var.PROMPT_CTX_ROOT]
+format = '[$env_value]($style) [{{ $sep }}](bright-black) '
+style = 'red'
 
-[hostname]
-ssh_only = true
-format = '[@$hostname{{ $pad }}]($style)[{{ $point }}](white) '
-style = 'fg:black bg:white'
+[env_var.PROMPT_CTX_REMOTE]
+format = '[$env_value]($style) [{{ $sep }}](bright-black) '
+style = 'white'
 
 [directory]
-format = '[{{ $pointl }}](blue)[{{ $pad }}$path{{ $pad }}]($style)[{{ $point }}](blue)([{{ $pad }}$read_only{{ $pad }}]($read_only_style)[{{ $point }}](red)) '
-style = 'fg:black bg:blue'
+format = '[$path]($style)( [$read_only]($read_only_style))'
+repo_root_format = '[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)( [$read_only]($read_only_style))'
+style = 'blue'
+repo_root_style = 'blue bold'
+before_repo_root_style = 'blue'
 read_only = '{{ $lock }}'
-read_only_style = 'fg:black bg:red'
+read_only_style = 'red'
 truncation_length = 8
 fish_style_pwd_dir_length = 1
 truncation_symbol = ''
 
 [jobs]
-format = '[{{ $pad }}+$number{{ $pad }}]($style)[{{ $point }}](yellow) '
-style = 'fg:black bg:yellow'
+format = ' [{{ $sep }}](bright-black) [{{ $gear }}$number]($style)'
+style = 'yellow'
 symbol_threshold = 1
 number_threshold = 1
 
-[git_branch]
-format = '[{{ $pad }}{{ $branch }}$branch{{ $pad }}]($style)[{{ $point }}](green)'
-style = 'fg:black bg:green'
-only_attached = false
+# git segment: computed by a zsh precmd hook (git status --porcelain=v2)
+# which exports exactly one GIT_SEG_* variable; the tag's color reflects
+# the working-tree state, p10k style
+[env_var.GIT_SEG_CLEAN]
+format = ' [{{ $sep }}](bright-black) [{{ $branch }}$env_value]($style)'
+style = 'green'
+
+[env_var.GIT_SEG_MODIFIED]
+format = ' [{{ $sep }}](bright-black) [{{ $branch }}$env_value]($style)'
+style = 'bright-yellow'
+
+[env_var.GIT_SEG_UNTRACKED]
+format = ' [{{ $sep }}](bright-black) [{{ $branch }}$env_value]($style)'
+style = 'bright-cyan'
+
+[env_var.GIT_SEG_CONFLICT]
+format = ' [{{ $sep }}](bright-black) [{{ $branch }}$env_value]($style)'
+style = 'red'
 
 [git_state]
-format = '[{{ $pad }}$state( $progress_current/$progress_total){{ $pad }}]($style)[{{ $point }}](red)'
-style = 'fg:black bg:red'
-
-[git_status]
-format = '([{{ $pad }}$ahead_behind$stashed$conflicted$staged$modified$untracked$deleted]($style)[{{ $point }}](bright-yellow))'
-style = 'fg:black bg:bright-yellow'
-ahead = '{{ $ahead }}${count} '
-behind = '{{ $behind }}${count} '
-diverged = '{{ $behind }}${behind_count} {{ $ahead }}${ahead_count} '
-stashed = '*${count} '
-conflicted = '~${count} '
-staged = '+${count} '
-modified = '!${count} '
-untracked = '?${count} '
-deleted = 'x${count} '
+format = ' [{{ $sep }}](bright-black) [$state( $progress_current/$progress_total)]($style)'
+style = 'red'
 
 [character]
 success_symbol = '[{{ $chevron }}](bright-purple)'
