@@ -24,15 +24,15 @@ style = 'bright-black'
 
 [cmd_duration]
 min_time = 0
-format = ' | [$duration]($style)'
+format = '[ | $duration]($style)'
 style = 'bright-black'
 
 [status]
 disabled = false
-format = ' | [$status]($style)'
+format = '[ | ](bright-black)[$status]($style)'
 style = 'red'
 pipestatus = true
-pipestatus_format = ' | [$pipestatus => $status]($style)'
+pipestatus_format = '[ | ](bright-black)[$pipestatus => $status]($style)'
 pipestatus_separator = '|'
 
 [username]
