@@ -1,18 +1,9 @@
-[".config/zsh/omz"]
-    type = "git-repo"
-    url = "https://github.com/ohmyzsh/ohmyzsh.git"
-    refreshPeriod = "168h"
-    clone.args = ["--depth", "1"]
-    pull.args = ["--ff-only"]
+{{- $arch := "x86_64" -}}
+{{- if eq .chezmoi.arch "arm64" -}}{{- $arch = "aarch64" -}}{{- end -}}
+{{- $platform := "unknown-linux-gnu" -}}
+{{- if eq .chezmoi.os "darwin" -}}{{- $platform = "apple-darwin" -}}{{- end -}}
 
-[".config/zsh/omz_custom/themes/powerlevel10k"]
-    type = "git-repo"
-    url = "https://github.com/romkatv/powerlevel10k.git"
-    refreshPeriod = "168h"
-    clone.args = ["--depth", "1"]
-    pull.args = ["--ff-only"]
-
-[".config/zsh/omz_custom/plugins/fast-syntax-highlighting"]
+[".config/zsh/plugins/fast-syntax-highlighting"]
     type = "git-repo"
     url = "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
     refreshPeriod = "168h"
@@ -25,3 +16,10 @@
     refreshPeriod = "168h"
     clone.args = ["--depth", "1"]
     pull.args = ["--ff-only"]
+
+[".local/bin/starship"]
+    type = "archive-file"
+    url = "https://github.com/starship/starship/releases/latest/download/starship-{{ $arch }}-{{ $platform }}.tar.gz"
+    path = "starship"
+    executable = true
+    refreshPeriod = "168h"

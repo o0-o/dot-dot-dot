@@ -28,6 +28,9 @@ rm -rf \
   "${HOME}/.config/zsh/.zshrc" \
   "${HOME}/.config/zsh/zshrc" \
   "${HOME}/.config/zsh/zprofile" \
+  "${HOME}/.config/zsh/zshrc.d" \
+  "${HOME}/.config/zsh/zprofile.d" \
+  "${HOME}/.config/zsh/.zcompdump"* \
   "${HOME}/.config/zsh/omz" \
   "${HOME}/.config/zsh/omz_custom" \
   "${HOME}/.local/share/nvim/site/autoload/plug.vim" \

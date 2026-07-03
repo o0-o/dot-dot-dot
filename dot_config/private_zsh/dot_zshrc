@@ -1,21 +1,134 @@
 # ZSHRC
 
-# sort and source sh (generic) and zsh rc configurations
-for rc in $(  { ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/sh/rc.d/"*
-                ls -d "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/zshrc.d/"*
-              } 2>/dev/null |
-                sort        |
-                tr '\n' ' '
-           ); do
+## Shared POSIX rc fragments (aliases usable by bash too)
+for rc in "${XDG_CONFIG_HOME:-$HOME/.config}/sh/rc.d/"*.sh; do
   source "${rc}" ||
   printf 'ZSHRC: An error occured in %s\n' "${rc##*/}" >&2
-done                          ||
+done
+unset rc
 
-{ printf 'ZSHRC: An error occured in .zshrc\n' >&2
-  return 1
+## History
+HISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/zsh_history"
+[ -d "${HISTFILE%/*}" ] || install -m '700' -d "${HISTFILE%/*}"
+export HISTFILE
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY
+
+# up/down arrows browse this shell's history; everything else is shared
+# (superuser.com/questions/446594)
+up-line-or-local-history() {
+  zle set-local-history 1
+  zle up-line-or-history
+  zle set-local-history 0
 }
+down-line-or-local-history() {
+  zle set-local-history 1
+  zle down-line-or-history
+  zle set-local-history 0
+}
+zle -N up-line-or-local-history
+zle -N down-line-or-local-history
+bindkey '^[OA' up-line-or-local-history
+bindkey '^[OB' down-line-or-local-history
+bindkey '^[[A' up-line-or-local-history
+bindkey '^[[B' down-line-or-local-history
 
+## Vi mode (replaces the omz vi-mode plugin)
+bindkey -v
+KEYTIMEOUT=1
+bindkey '^?' backward-delete-char
+bindkey '^R' history-incremental-search-backward
+
+## Aliases (zsh-only; shared ones live in sh/rc.d)
+if command -v ccat >/dev/null 2>&1; then
+  alias cat="ccat --bg='dark' --color='auto'"
+fi
+if infocmp tmux-256color >/dev/null 2>&1; then
+  alias tmux='TERM=tmux-256color tmux'
+elif infocmp screen-256color >/dev/null 2>&1; then
+  alias tmux='TERM=screen-256color tmux'
+fi
+if ls --color=auto . >/dev/null 2>&1; then
+  alias ls='ls --color=auto'
+else
+  alias ls='ls -G'
+fi
+
+## direnv
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
+fi
+
+## Completion — single compinit, dump in cache
+if [ -n "${HOMEBREW_PREFIX-}" ] &&
+   [ -d "${HOMEBREW_PREFIX}/share/zsh/site-functions" ]; then
+  fpath+=("${HOMEBREW_PREFIX}/share/zsh/site-functions")
+fi
 autoload -Uz compinit
-compinit
+zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+[ -d "${zcompdump%/*}" ] || install -m '700' -d "${zcompdump%/*}"
+compinit -d "${zcompdump}"
+unset zcompdump
+# case- and hyphen-insensitive matching, menu selection
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}'
+zstyle ':completion:*' menu select
 
-return 0
+## Tmux autostart (kitty windows only)
+tmux-autostart() {
+  [ "${TERM}" = 'xterm-kitty' ]       || return 0  # only from kitty
+  [ "${UID}" != '0' ]                 || return 0  # not for root
+  [ "${EUID}" != '0' ]                || return 0
+  [ -z "${TMUX}" ]                    || return 0  # not inside tmux
+  [ -z "${default_tmux_session}" ]    || return 0  # only once per shell
+  [ -z "${INSIDE_EMACS}${EMACS}" ]    || return 0  # not inside emacs
+  [ -z "${VIM}" ]                     || return 0  # not inside vim
+
+  # use uid as default session
+  export default_tmux_session="${UID:-0}"
+
+  local plugins="${XDG_CONFIG_HOME:-$HOME/.config}/tmux/plugins"
+
+  # if no plugins are installed, install them before starting the session
+  if [ "$(ls -d "${plugins}/"* 2>/dev/null | wc -l)" -le 1 ]; then
+    "${plugins}/tpm/bin/install_plugins"
+  fi
+
+  # if the session doesn't exist, daemonize it
+  tmux ls -F '#S' 2>/dev/null | grep -q "^${default_tmux_session}" ||
+  tmux new-session -s "${default_tmux_session}" -d &>/dev/null
+
+  # clean up orphaned sessions
+  tmux ls -F '#S#{?session_attached,attached,}' |
+  grep -E "^${default_tmux_session}-[0-9]"      |
+  grep -v 'attached$'                           |
+  while read -r session; do
+    tmux kill-session -t "${session}"
+  done
+
+  # create a new window if other sessions are attached,
+  # otherwise attach to the existing window
+  if tmux ls -F '#S#{?session_attached,attached,}' |
+     grep -Eq "^${default_tmux_session}(-[0-9]+)?attached"; then
+    tmux new-session -t "${default_tmux_session}" \; new-window
+  else
+    tmux attach -t "${default_tmux_session}"
+  fi
+
+  # install/update plugins in background
+  ("${plugins}/tpm/bin/install_plugins"      &>/dev/null &)
+  ("${plugins}/tpm/bin/update_plugins" 'all' &>/dev/null &)
+}
+tmux-autostart
+
+## Prompt and plugins — only inside tmux
+if [ -n "${TMUX-}" ]; then
+  fsh="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/plugins/fast-syntax-highlighting"
+  [ -r "${fsh}/fast-syntax-highlighting.plugin.zsh" ] &&
+  source "${fsh}/fast-syntax-highlighting.plugin.zsh"
+  unset fsh
+
+  if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+  fi
+fi

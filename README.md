@@ -25,9 +25,9 @@ a run_once script archives the old repo to
 `~/dot-dot-dot.git.pre-chezmoi.tar.gz` and removes the legacy files
 before the first apply.
 
-Third-party plugins (oh-my-zsh, powerlevel10k, fast-syntax-highlighting,
-tpm) are declared in `.chezmoiexternal.toml` and cloned/refreshed
-automatically by `chezmoi apply` (weekly refresh).
+Third-party pieces (fast-syntax-highlighting, tpm, and the starship
+prompt binary) are declared in `.chezmoiexternal.toml` and
+installed/refreshed automatically by `chezmoi apply` (weekly refresh).
 
 To push changes from a machine, switch the source remote to ssh:
 ```
