@@ -29,9 +29,9 @@ add_newline = false
 
 {{ if .unicode -}}
 format = """
-[╭─](bright-black)$time${env_var.CMD_DUR_FMT}$status
-[│](bright-black)
-[├─](bright-black)$username$hostname$directory$jobs$git_branch$git_state$git_status
+$time${env_var.CMD_DUR_FMT}$status
+
+[╭─](bright-black)$username$hostname$directory$jobs$git_branch$git_state$git_status
 [╰─](bright-black)$character"""
 {{- else -}}
 format = """
