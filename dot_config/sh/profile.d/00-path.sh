@@ -1,35 +1,26 @@
 ### PATH SH
 
-PATH='/usr/bin:/usr/sbin:/bin:/sbin'
+# prepend a directory to PATH if it exists and isn't already present
+path_prepend() {
+  [ -d "${1}" ] || return 0
+  case ":${PATH}:" in
+    *":${1}:"*) ;;
+    *) PATH="${1}:${PATH}" ;;
+  esac
+}
 
-#Local sbin
-[ -d '/usr/local/sbin' ]       &&
-PATH="/usr/local/sbin:${PATH}" ||
-[ ! -d '/usr/local/sbin' ]     ||
-return 1
+path_prepend '/usr/local/sbin'
+path_prepend '/usr/local/bin'
 
-PATH="/usr/local/bin:${PATH}"
+# Homebrew (and kegs that don't link into the default prefix)
+if [ -d '/opt/homebrew' ]; then
+  HOMEBREW_PREFIX='/opt/homebrew'
+  export HOMEBREW_PREFIX
+  path_prepend "${HOMEBREW_PREFIX}/sbin"
+  path_prepend "${HOMEBREW_PREFIX}/bin"
+  path_prepend "${HOMEBREW_PREFIX}/opt/openjdk/bin"
+  path_prepend "${HOMEBREW_PREFIX}/opt/node@22/bin"
+fi
 
-# Homebrew
-[ -d '/opt/homebrew/' ]			&&
-HOMEBREW_PREFIX=/opt/homebrew		&&
-PATH="${HOMEBREW_PREFIX}/sbin:${PATH}"	&&
-PATH="${HOMEBREW_PREFIX}/bin:${PATH}"	||
-[ ! -d '/opt/homebrew/' ]		||
-return 1
-
-# Homebrew openjdk
-[ -d "${HOMEBREW_PREFIX}/opt/openjdk/bin" ]		&&
-PATH="${HOMEBREW_PREFIX}/opt/openjdk/bin:${PATH}"	||
-[ ! -d "${HOMEBREW_PREFIX}/opt/openjdk/bin" ]		||
-return 1
-
-# Homebrew Node 22
-[ -d "${HOMEBREW_PREFIX}/opt/node@22/bin" ]		&&
-PATH="${HOMEBREW_PREFIX}/opt/node@22/bin:${PATH}"	||
-[ ! -d "${HOMEBREW_PREFIX}/opt/node@22/bin" ]		||
-return 1
-
+unset -f path_prepend
 export PATH
-
-return 0

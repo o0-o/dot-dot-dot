@@ -1,11 +1,4 @@
-# Less
-# Enforce xdg
-typeset LESSHISTFILE="${XDG_DATA_HOME:-$HOME/.local}/less/lesshst"  &&
-install -m '700'                                                    \
-        -d "${LESSHISTFILE%/*}"                                     &&
-
-export LESSHISTFILE                                                 ||
-
-return 1
-
-return 0
+# less: keep history under XDG data dir
+LESSHISTFILE="${XDG_DATA_HOME:-$HOME/.local/share}/less/lesshst"
+[ -d "${LESSHISTFILE%/*}" ] || install -m '700' -d "${LESSHISTFILE%/*}"
+export LESSHISTFILE
