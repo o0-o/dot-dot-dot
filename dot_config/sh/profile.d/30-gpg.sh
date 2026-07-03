@@ -6,10 +6,15 @@ return  0
 
 GPG_TTY="$( tty )"                                        &&
 SSH_AUTH_SOCK=$(  gpgconf --list-dirs agent-ssh-socket  ) &&
-export  GPG_TTY SSH_AUTH_SOCK                             &&
+export  GPG_TTY SSH_AUTH_SOCK                             ||
 
-gpgconf --kill gpg-agent                                  &&
-gpgconf --launch gpg-agent                                ||
+return  1
+
+# ping the agent (auto-starts it if absent) and point pinentry at this
+# tty; only a wedged agent gets killed and relaunched
+gpg-connect-agent updatestartuptty /bye 1>/dev/null 2>&1  ||
+{ gpgconf --kill   gpg-agent
+  gpgconf --launch gpg-agent; }                           ||
 
 return  1
 
