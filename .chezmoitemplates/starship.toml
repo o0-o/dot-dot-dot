@@ -13,6 +13,7 @@
 {{- $behind := "<" -}}
 {{- $chevron := ">" -}}
 {{- $chevleft := "<" -}}
+{{- $point := "" -}}
 {{- if .unicode -}}
 {{- $pipe = "│" -}}
 {{- $lock = "" -}}
@@ -21,15 +22,24 @@
 {{- $behind = "⇣" -}}
 {{- $chevron = "❯" -}}
 {{- $chevleft = "❮" -}}
+{{- $point = "" -}}
 {{- end }}
 
 add_newline = false
 
+{{ if .unicode -}}
+format = """
+[╭─](bright-black)$time${env_var.CMD_DUR_FMT}$status
+[│](bright-black)
+[├─](bright-black)$username$hostname$directory$jobs$git_branch$git_state$git_status
+[╰─](bright-black)$character"""
+{{- else -}}
 format = """
 $time${env_var.CMD_DUR_FMT}$status
 
 $username$hostname$directory$jobs$git_branch$git_state$git_status
 $character"""
+{{- end }}
 
 [time]
 disabled = false
@@ -58,11 +68,11 @@ style_root = 'fg:black bg:red'
 
 [hostname]
 ssh_only = true
-format = '[@$hostname ]($style) '
+format = '[@$hostname ]($style)[{{ $point }}](white) '
 style = 'fg:black bg:white'
 
 [directory]
-format = '[ $path ]($style)[$read_only]($read_only_style) '
+format = '[ $path ]($style)[{{ $point }}](blue)([ $read_only ]($read_only_style)[{{ $point }}](red)) '
 style = 'fg:black bg:blue'
 read_only = '{{ $lock }}'
 read_only_style = 'fg:black bg:red'
@@ -71,22 +81,22 @@ fish_style_pwd_dir_length = 1
 truncation_symbol = ''
 
 [jobs]
-format = '[ +$number ]($style) '
+format = '[ +$number ]($style)[{{ $point }}](yellow) '
 style = 'fg:black bg:yellow'
 symbol_threshold = 1
 number_threshold = 1
 
 [git_branch]
-format = '[ {{ $branch }}$branch ]($style)'
+format = '[ {{ $branch }}$branch ]($style)[{{ $point }}](green)'
 style = 'fg:black bg:green'
 only_attached = false
 
 [git_state]
-format = '[ $state( $progress_current/$progress_total) ]($style)'
+format = '[ $state( $progress_current/$progress_total) ]($style)[{{ $point }}](red)'
 style = 'fg:black bg:red'
 
 [git_status]
-format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style))'
+format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style)[{{ $point }}](bright-yellow))'
 style = 'fg:black bg:bright-yellow'
 ahead = '{{ $ahead }}${count} '
 behind = '{{ $behind }}${count} '
