@@ -149,15 +149,35 @@ if [ -n "${TMUX-}" ]; then
       export PROMPT_CTX_REMOTE="${USERNAME}@${HOST%%.*}"
     fi
 
-    # stopwatch-style command duration (0.333, 1:05.123, 1:02:03.456)
-    # exported for starship's env_var module — its cmd_duration can't
-    # format sub-second precision
+    # info line (timestamp, stopwatch duration, exit status): exported
+    # for starship's env_var modules only when a command actually ran,
+    # so fresh shells and bare Enter presses skip the whole line
     zmodload zsh/datetime
     autoload -Uz add-zsh-hook
+    typeset -g __prompt_sep='──' __prompt_pipe='│'
+    if [ -n "${STARSHIP_CONFIG-}" ]; then
+      __prompt_sep='--' __prompt_pipe='|'
+    fi
     duration-preexec() {
+      # a bare `clear` reads as a fresh screen: skip the next info line
+      if [[ "${1//[[:space:]]/}" == 'clear' ]]; then
+        unset __duration_t0
+        return 0
+      fi
       __duration_t0="${EPOCHREALTIME}"
     }
+    # Ctrl-L clears without running a command; drop the info line and
+    # re-render the prompt so it looks like a fresh screen too
+    clear-screen-fresh() {
+      unset CMD_STAMP CMD_DUR_FMT CMD_STATUS_FMT
+      zle clear-screen
+      zle reset-prompt
+    }
+    zle -N clear-screen-fresh
+    bindkey '^L' clear-screen-fresh
     duration-precmd() {
+      local -i last="${?}"
+      local -a pipe_codes=("${pipestatus[@]}")
       if [ -n "${__duration_t0-}" ]; then
         local -F elapsed=$(( EPOCHREALTIME - __duration_t0 ))
         local -i ms=$(( int(elapsed * 1000 + 0.5) ))
@@ -171,10 +191,25 @@ if [ -n "${TMUX-}" ]; then
         else
           printf -v CMD_DUR_FMT '%d.%03d' "${s}" "${ms}"
         fi
-        export CMD_DUR_FMT
+        strftime -s CMD_STAMP "%Y/%m/%d ${__prompt_sep} %H:%M:%S" \
+          "${EPOCHSECONDS}"
+        unset CMD_STATUS_FMT
+        if (( last )); then
+          if (( ${#pipe_codes} > 1 )); then
+            local code joined=''
+            for code in "${pipe_codes[@]}"; do
+              joined+="${joined:+${__prompt_pipe}}${code}"
+            done
+            CMD_STATUS_FMT="${joined}"
+          else
+            CMD_STATUS_FMT="${last}"
+          fi
+          export CMD_STATUS_FMT
+        fi
+        export CMD_STAMP CMD_DUR_FMT
         unset __duration_t0
       else
-        unset CMD_DUR_FMT
+        unset CMD_STAMP CMD_DUR_FMT CMD_STATUS_FMT
       fi
     }
     add-zsh-hook preexec duration-preexec

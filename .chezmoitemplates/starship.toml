@@ -33,38 +33,32 @@ add_newline = false
 
 {{ if .unicode -}}
 format = """
-$time${env_var.CMD_DUR_FMT}$status
+(${env_var.CMD_STAMP}${env_var.CMD_DUR_FMT}${env_var.CMD_STATUS_FMT}
 
-[╭─](bright-black) ${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
+)[╭─](bright-black) ${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
 [╰─](bright-black)$character"""
 {{- else -}}
 format = """
-$time${env_var.CMD_DUR_FMT}$status
+(${env_var.CMD_STAMP}${env_var.CMD_DUR_FMT}${env_var.CMD_STATUS_FMT}
 
-${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
+)${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
 $character"""
 {{- end }}
 
-[time]
-disabled = false
-format = '[$time]($style)'
-time_format = '%Y/%m/%d {{ $sep }} %H:%M:%S'
+# the info line (timestamp, duration, status) is composed by a zsh
+# precmd hook and exported only when a command actually ran — fresh
+# shells and bare Enter presses render no info line at all
+[env_var.CMD_STAMP]
+format = '[$env_value]($style)'
 style = 'bright-black'
 
-# duration is computed and formatted by a zsh precmd hook (stopwatch
-# style, ms precision) — starship's own cmd_duration can't do this
 [env_var.CMD_DUR_FMT]
 format = '[ {{ $sep }} $env_value]($style)'
 style = 'bright-black'
 
-[status]
-disabled = false
-format = '[ {{ $sep }} ](bright-black)[$status]($style)'
+[env_var.CMD_STATUS_FMT]
+format = '[ {{ $sep }} ](bright-black)[$env_value]($style)'
 style = 'red'
-pipestatus = true
-pipestatus_format = '[ {{ $sep }} ](bright-black)$pipestatus'
-pipestatus_segment_format = '[$status]($style)'
-pipestatus_separator = '[{{ $pipe }}](bright-black)'
 
 # context tag: exported by .zshrc when the shell is root or remote
 [env_var.PROMPT_CTX_ROOT]
@@ -76,13 +70,13 @@ format = '[$env_value]($style) [{{ $sep }}](bright-black) '
 style = 'white'
 
 [directory]
-format = '[$path]($style)( [$read_only]($read_only_style))'
-repo_root_format = '[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)( [$read_only]($read_only_style))'
-style = 'blue'
-repo_root_style = 'blue bold'
-before_repo_root_style = 'blue'
+format = '([$read_only ]($read_only_style))[$path]($style)'
+repo_root_format = '([$read_only ]($read_only_style))[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)'
+style = 'cyan'
+repo_root_style = 'cyan bold'
+before_repo_root_style = 'cyan'
 read_only = '{{ $lock }}'
-read_only_style = 'red'
+read_only_style = 'bright-red'
 truncation_length = 8
 fish_style_pwd_dir_length = 1
 truncation_symbol = ''
@@ -106,7 +100,7 @@ style = 'bright-yellow'
 
 [env_var.GIT_SEG_UNTRACKED]
 format = ' [{{ $sep }}](bright-black) [{{ $branch }}$env_value]($style)'
-style = 'bright-cyan'
+style = 'bright-green'
 
 [env_var.GIT_SEG_CONFLICT]
 format = ' [{{ $sep }}](bright-black) [{{ $branch }}$env_value]($style)'
