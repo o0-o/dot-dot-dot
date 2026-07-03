@@ -16,7 +16,13 @@
 {{- $gap := " " -}}
 {{- $sep := "--" -}}
 {{- $gear := "+" -}}
+{{- $py := "py " -}}
+{{- $node := "node " -}}
+{{- $k8s := "k8s " -}}
 {{- if .unicode -}}
+{{- $k8s = "󱃾 " -}}
+{{- $py = " " -}}
+{{- $node = " " -}}
 {{- $sep = "──" -}}
 {{- $gear = " " -}}
 {{- $pipe = "│" -}}
@@ -35,13 +41,13 @@ add_newline = false
 format = """
 (${env_var.CMD_STAMP}${env_var.CMD_DUR_FMT}${env_var.CMD_STATUS_FMT}
 
-)[╭─](bright-black) ${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
+)[╭─](bright-black) ${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}${env_var.CWD_PATH_FMT}$jobs$python$nodejs${env_var.K8S_SEG}${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
 [╰─](bright-black)$character"""
 {{- else -}}
 format = """
 (${env_var.CMD_STAMP}${env_var.CMD_DUR_FMT}${env_var.CMD_STATUS_FMT}
 
-)${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}$directory$jobs${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
+)${env_var.PROMPT_CTX_ROOT}${env_var.PROMPT_CTX_REMOTE}${env_var.CWD_PATH_FMT}$jobs$python$nodejs${env_var.K8S_SEG}${env_var.GIT_SEG_CLEAN}${env_var.GIT_SEG_MODIFIED}${env_var.GIT_SEG_UNTRACKED}${env_var.GIT_SEG_CONFLICT}$git_state
 $character"""
 {{- end }}
 
@@ -69,17 +75,11 @@ style = 'red'
 format = '[$env_value]($style) [{{ $sep }}](bright-black) '
 style = 'white'
 
-[directory]
-format = '([$read_only ]($read_only_style))[$path]($style)'
-repo_root_format = '([$read_only ]($read_only_style))[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)'
+# path segment: rendered by the cwd-path zsh hook (fish truncation,
+# bold git root, direnv allow-state coloring, read-only lock)
+[env_var.CWD_PATH_FMT]
+format = '[$env_value]($style)'
 style = 'cyan'
-repo_root_style = 'cyan bold'
-before_repo_root_style = 'cyan'
-read_only = '{{ $lock }}'
-read_only_style = 'bright-red'
-truncation_length = 8
-fish_style_pwd_dir_length = 1
-truncation_symbol = ''
 
 [jobs]
 format = ' [{{ $sep }}](bright-black) [{{ $gear }}$number]($style)'
@@ -109,6 +109,22 @@ style = 'red'
 [git_state]
 format = ' [{{ $sep }}](bright-black) [$state( $progress_current/$progress_total)]($style)'
 style = 'red'
+
+# environment segments: each only renders in relevant contexts
+[python]
+format = '[ {{ $sep }} ](bright-black)[{{ $py }}${pyenv_prefix}(${version})]($style)'
+style = 'bright-cyan'
+
+[nodejs]
+format = '[ {{ $sep }} ](bright-black)[{{ $node }}($version)]($style)'
+style = 'purple'
+
+# k8s segment: composed by a zsh precmd hook when KUBECONFIG is set;
+# color reflects talos alignment (magenta match, red mismatch,
+# bright-blue when no talosconfig is in scope)
+[env_var.K8S_SEG]
+format = '[ {{ $sep }} ](bright-black)[{{ $k8s }}$env_value]($style)'
+style = 'bright-blue'
 
 [character]
 success_symbol = '[{{ $chevron }}](bright-purple)'

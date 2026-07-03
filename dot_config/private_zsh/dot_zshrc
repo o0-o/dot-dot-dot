@@ -154,9 +154,9 @@ if [ -n "${TMUX-}" ]; then
     # so fresh shells and bare Enter presses skip the whole line
     zmodload zsh/datetime
     autoload -Uz add-zsh-hook
-    typeset -g __prompt_sep='──' __prompt_pipe='│'
+    typeset -g __prompt_sep='──' __prompt_pipe='│' __prompt_lock=''
     if [ -n "${STARSHIP_CONFIG-}" ]; then
-      __prompt_sep='--' __prompt_pipe='|'
+      __prompt_sep='--' __prompt_pipe='|' __prompt_lock='ro'
     fi
     duration-preexec() {
       # a bare `clear` reads as a fresh screen: skip the next info line
@@ -275,6 +275,144 @@ if [ -n "${TMUX-}" ]; then
       fi
     }
     add-zsh-hook precmd git-seg-precmd
+
+    # path segment: fish-style truncation; the git root is bold, venv
+    # and node roots take their segment colors (bright-cyan / magenta),
+    # a direnv root is underlined when allowed and struck through when
+    # blocked, and a lock prefixes the path when cwd isn't writable
+    cwd-path-precmd() {
+      local esc_base=$'\e[22;24;29;36m' esc_bold=$'\e[1m'
+      local esc_ul=$'\e[4m' esc_strike=$'\e[9m'
+      local esc_py=$'\e[96m' esc_node=$'\e[35m' esc_bad=$'\e[91m'
+      local lock=''
+      [ -w "${PWD}" ] || lock="${esc_bad}${__prompt_lock} ${esc_base}"
+
+      # nearest ancestors carrying each marker
+      local denv='' pyroot='' nroot='' d="${PWD}"
+      while [ -n "${d}" ]; do
+        if [ -z "${denv}" ] && [ -e "${d}/.envrc" ]; then
+          denv="${d}"
+        fi
+        if [ -z "${pyroot}" ] &&
+           { [ -e "${d}/.venv" ] || [ -e "${d}/venv" ] ||
+             [ -e "${d}/.direnv" ]; }; then
+          pyroot="${d}"
+        fi
+        if [ -z "${nroot}" ] && [ -e "${d}/package.json" ]; then
+          nroot="${d}"
+        fi
+        [ "${d}" = '/' ] && break
+        d="${d%/*}"; [ -n "${d}" ] || d='/'
+      done
+      local denv_attr="${esc_strike}"
+      if [ -n "${denv}" ] &&
+         direnv status 2>/dev/null | grep -Eq 'Found RC allowed (0|true)'
+      then
+        denv_attr="${esc_ul}"
+      fi
+
+      local groot=''
+      groot="$(git rev-parse --show-toplevel 2>/dev/null)"
+
+      local abbrev="${(%):-%~}"
+      local -a parts=("${(s:/:)abbrev}")
+      local -a pwd_parts=("${(s:/:)PWD}")
+      local -i n=${#parts} n_pwd=${#pwd_parts}
+      local -i i_git=0 i_env=0 i_py=0 i_node=0
+      local -a m
+      if [ -n "${groot}" ]; then
+        m=("${(s:/:)groot}");  i_git=$(( n - (n_pwd - ${#m}) ))
+      fi
+      if [ -n "${denv}" ]; then
+        m=("${(s:/:)denv}");   i_env=$(( n - (n_pwd - ${#m}) ))
+      fi
+      if [ -n "${pyroot}" ]; then
+        m=("${(s:/:)pyroot}"); i_py=$(( n - (n_pwd - ${#m}) ))
+      fi
+      if [ -n "${nroot}" ]; then
+        m=("${(s:/:)nroot}");  i_node=$(( n - (n_pwd - ${#m}) ))
+      fi
+
+      local -i i
+      local out='' comp col
+      for (( i=1; i<=n; i++ )); do
+        comp="${parts[i]}"
+        if (( i < n && i != i_git && i != i_env &&
+              i != i_py && i != i_node )); then
+          if [[ "${comp}" == .* ]]; then comp="${comp[1,2]}"
+          else comp="${comp[1,1]}"; fi
+        fi
+        col=''
+        (( i_git > 0 && i == i_git )) && col+="${esc_bold}"
+        if (( i_py > 0 && i == i_py )); then
+          col+="${esc_py}"
+        elif (( i_node > 0 && i == i_node )); then
+          col+="${esc_node}"
+        fi
+        (( i_env > 0 && i == i_env )) && col+="${denv_attr}"
+        if [ -n "${col}" ]; then
+          out+="${col}${comp}${esc_base}"
+        else
+          out+="${comp}"
+        fi
+        (( i < n )) && out+='/'
+      done
+      export CWD_PATH_FMT="${lock}${out}"
+    }
+    add-zsh-hook precmd cwd-path-precmd
+
+    # k8s segment (workspace-scoped via KUBECONFIG): just the cluster
+    # name, underlined when the talos context governs the same cluster
+    # and struck through on a mismatch (which also gets a one-shot
+    # stderr warning — the two configs should never disagree)
+    k8s-seg-precmd() {
+      unset K8S_SEG
+      [ -n "${KUBECONFIG-}" ] && [ -r "${KUBECONFIG}" ] || return 0
+      local info
+      info="$(kubectl config view --minify --output 'jsonpath={.contexts[0].name}{"\t"}{.contexts[0].context.cluster}' 2>/dev/null)" ||
+      return 0
+      [ -n "${info}" ] || return 0
+      local ctx="${info%%$'\t'*}"
+      local cluster="${info#*$'\t'}"
+
+      local name
+      if [ -n "${cluster}" ]; then
+        name="${cluster}"
+      elif [[ "${ctx}" == *@* ]]; then
+        name="${ctx#*@}"
+      else
+        name="${ctx}"
+      fi
+
+      local attr=''
+      if [ -n "${TALOSCONFIG-}" ] && [ -r "${TALOSCONFIG}" ]; then
+        local tctx
+        tctx="$(sed -n 's/^context: //p' "${TALOSCONFIG}" 2>/dev/null)"
+        if [ -n "${tctx}" ]; then
+          if [ "${cluster}" = "${tctx}" ] || [ "${ctx}" = "${tctx}" ] ||
+             [[ "${ctx}" == *"@${tctx}" ]]; then
+            attr=$'\e[4m'
+            unset __k8s_warned
+          else
+            attr=$'\e[9m'
+            if [ "${__k8s_warned-}" != "${tctx}:${name}" ]; then
+              typeset -g __k8s_warned="${tctx}:${name}"
+              printf '\e[91mwarning:\e[0m talos/kube contexts misaligned: talos=%s kube=%s\n' \
+                "${tctx}" "${name}" >&2
+            fi
+          fi
+        fi
+      else
+        unset __k8s_warned
+      fi
+
+      if [ -n "${attr}" ]; then
+        export K8S_SEG="${attr}${name}"$'\e[24;29m'
+      else
+        export K8S_SEG="${name}"
+      fi
+    }
+    add-zsh-hook precmd k8s-seg-precmd
 
     eval "$(starship init zsh)"
   fi
