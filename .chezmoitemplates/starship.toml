@@ -23,8 +23,8 @@
 {{- $behind = "⇣" -}}
 {{- $chevron = "❯" -}}
 {{- $chevleft = "❮" -}}
-{{- $point = "" -}}
-{{- $pointl = "" -}}
+{{- $point = "" -}}
+{{- $pointl = "" -}}
 {{- end }}
 
 add_newline = false
@@ -70,11 +70,11 @@ style_root = 'fg:black bg:red'
 
 [hostname]
 ssh_only = true
-format = '[@$hostname ]($style)[{{ $point }}](white) '
+format = '[@$hostname ]($style)[{{ $point }}](fg:black bg:white)[{{ $point }}](white) '
 style = 'fg:black bg:white'
 
 [directory]
-format = '[{{ $pointl }}](blue)[ $path ]($style)[{{ $point }}](blue)([ $read_only ]($read_only_style)[{{ $point }}](red)) '
+format = '[{{ $pointl }}](blue)[{{ $pointl }}](fg:black bg:blue)[ $path ]($style)[{{ $point }}](fg:black bg:blue)[{{ $point }}](blue)([ $read_only ]($read_only_style)[{{ $point }}](fg:black bg:red)[{{ $point }}](red)) '
 style = 'fg:black bg:blue'
 read_only = '{{ $lock }}'
 read_only_style = 'fg:black bg:red'
@@ -83,22 +83,22 @@ fish_style_pwd_dir_length = 1
 truncation_symbol = ''
 
 [jobs]
-format = '[ +$number ]($style)[{{ $point }}](yellow) '
+format = '[ +$number ]($style)[{{ $point }}](fg:black bg:yellow)[{{ $point }}](yellow) '
 style = 'fg:black bg:yellow'
 symbol_threshold = 1
 number_threshold = 1
 
 [git_branch]
-format = '[ {{ $branch }}$branch ]($style)[{{ $point }}](green)'
+format = '[ {{ $branch }}$branch ]($style)[{{ $point }}](fg:black bg:green)[{{ $point }}](green)'
 style = 'fg:black bg:green'
 only_attached = false
 
 [git_state]
-format = '[ $state( $progress_current/$progress_total) ]($style)[{{ $point }}](red)'
+format = '[ $state( $progress_current/$progress_total) ]($style)[{{ $point }}](fg:black bg:red)[{{ $point }}](red)'
 style = 'fg:black bg:red'
 
 [git_status]
-format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style)[{{ $point }}](bright-yellow))'
+format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style)[{{ $point }}](fg:black bg:bright-yellow)[{{ $point }}](bright-yellow))'
 style = 'fg:black bg:bright-yellow'
 ahead = '{{ $ahead }}${count} '
 behind = '{{ $behind }}${count} '
