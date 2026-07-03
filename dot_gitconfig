@@ -1,0 +1,13 @@
+[user]
+	name = oØ.o
+	email = o0-o@o0-o.ooo
+	signingkey = 674B3C3FD947A2A5
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+[commit]
+	gpgsign = true
+[tag]
+	gpgsign = true
