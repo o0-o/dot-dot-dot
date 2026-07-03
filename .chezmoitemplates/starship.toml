@@ -15,6 +15,7 @@
 {{- $chevleft := "<" -}}
 {{- $point := "" -}}
 {{- $pointl := "" -}}
+{{- $pad := " " -}}
 {{- if .unicode -}}
 {{- $pipe = "│" -}}
 {{- $lock = "" -}}
@@ -23,6 +24,7 @@
 {{- $behind = "⇣" -}}
 {{- $chevron = "❯" -}}
 {{- $chevleft = "❮" -}}
+{{- $pad = "" -}}
 {{- $point = "" -}}
 {{- $pointl = "" -}}
 {{- end }}
@@ -64,17 +66,17 @@ pipestatus_format = '[ {{ $pipe }} ](bright-black)[$pipestatus => $status]($styl
 pipestatus_separator = '{{ $pipe }}'
 
 [username]
-format = '[ $user]($style)'
+format = '[{{ $pad }}$user]($style)'
 style_user = 'fg:black bg:white'
 style_root = 'fg:black bg:red'
 
 [hostname]
 ssh_only = true
-format = '[@$hostname ]($style)[{{ $point }}](fg:black bg:white)[{{ $point }}](white) '
+format = '[@$hostname{{ $pad }}]($style)[{{ $point }}](white) '
 style = 'fg:black bg:white'
 
 [directory]
-format = '[{{ $pointl }}](blue)[{{ $pointl }}](fg:black bg:blue)[ $path ]($style)[{{ $point }}](fg:black bg:blue)[{{ $point }}](blue)([ $read_only ]($read_only_style)[{{ $point }}](fg:black bg:red)[{{ $point }}](red)) '
+format = '[{{ $pointl }}](blue)[{{ $pad }}$path{{ $pad }}]($style)[{{ $point }}](blue)([{{ $pad }}$read_only{{ $pad }}]($read_only_style)[{{ $point }}](red)) '
 style = 'fg:black bg:blue'
 read_only = '{{ $lock }}'
 read_only_style = 'fg:black bg:red'
@@ -83,22 +85,22 @@ fish_style_pwd_dir_length = 1
 truncation_symbol = ''
 
 [jobs]
-format = '[ +$number ]($style)[{{ $point }}](fg:black bg:yellow)[{{ $point }}](yellow) '
+format = '[{{ $pad }}+$number{{ $pad }}]($style)[{{ $point }}](yellow) '
 style = 'fg:black bg:yellow'
 symbol_threshold = 1
 number_threshold = 1
 
 [git_branch]
-format = '[ {{ $branch }}$branch ]($style)[{{ $point }}](fg:black bg:green)[{{ $point }}](green)'
+format = '[{{ $pad }}{{ $branch }}$branch{{ $pad }}]($style)[{{ $point }}](green)'
 style = 'fg:black bg:green'
 only_attached = false
 
 [git_state]
-format = '[ $state( $progress_current/$progress_total) ]($style)[{{ $point }}](fg:black bg:red)[{{ $point }}](red)'
+format = '[{{ $pad }}$state( $progress_current/$progress_total){{ $pad }}]($style)[{{ $point }}](red)'
 style = 'fg:black bg:red'
 
 [git_status]
-format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style)[{{ $point }}](fg:black bg:bright-yellow)[{{ $point }}](bright-yellow))'
+format = '([{{ $pad }}$ahead_behind$stashed$conflicted$staged$modified$untracked$deleted]($style)[{{ $point }}](bright-yellow))'
 style = 'fg:black bg:bright-yellow'
 ahead = '{{ $ahead }}${count} '
 behind = '{{ $behind }}${count} '
