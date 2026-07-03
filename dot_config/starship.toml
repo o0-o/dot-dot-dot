@@ -1,6 +1,12 @@
-# Starship prompt — layout mirrors the previous powerlevel10k lean
-# 8-color config: time/duration/status, blank line, context/dir/jobs/git,
-# prompt char on its own line. ASCII, transient prompt not supported.
+# Starship prompt — faithful port of the previous powerlevel10k lean
+# 8-color config (ascii): gray "date | time | duration | status" line,
+# then context/dir/jobs/git as black-on-color blocks, then a magenta
+# prompt char that tracks vi mode (> insert, < normal, V visual, ^ replace).
+#
+# Known deviations from p10k: no transient prompt, exit code hidden when
+# zero, git block is green(branch)+bright-yellow(status) instead of one
+# block recolored by state, and truncation is fish-style rather than
+# truncate-to-unique.
 
 add_newline = false
 
@@ -12,54 +18,74 @@ $character"""
 
 [time]
 disabled = false
-format = '[$time]($style) '
-time_format = '%H:%M:%S'
-style = 'cyan'
+format = '[$time]($style)'
+time_format = '%Y/%m/%d | %H:%M:%S'
+style = 'bright-black'
 
 [cmd_duration]
-min_time = 3_000
-format = '[$duration]($style) '
-style = 'yellow'
+min_time = 0
+format = ' | [$duration]($style)'
+style = 'bright-black'
 
 [status]
 disabled = false
-format = '[$status]($style) '
+format = ' | [$status]($style)'
 style = 'red'
+pipestatus = true
+pipestatus_format = ' | [$pipestatus => $status]($style)'
+pipestatus_separator = '|'
 
 [username]
-format = '[$user]($style)'
-style_user = 'green'
-style_root = 'red'
+format = '[ $user]($style)'
+style_user = 'fg:black bg:white'
+style_root = 'fg:black bg:red'
 
 [hostname]
 ssh_only = true
-format = '[@$hostname]($style) '
-style = 'green'
+format = '[@$hostname ]($style) '
+style = 'fg:black bg:white'
 
 [directory]
-format = '[$path]($style)[$read_only]($read_only_style) '
-style = 'blue'
-truncation_length = 4
-read_only = ' ro'
+format = '[ $path ]($style)[$read_only]($read_only_style) '
+style = 'fg:black bg:blue'
+read_only = 'ro'
+read_only_style = 'fg:black bg:red'
+truncation_length = 8
+fish_style_pwd_dir_length = 1
+truncation_symbol = ''
 
 [jobs]
-format = '[$symbol$number]($style) '
-symbol = '+'
-style = 'magenta'
+format = '[ +$number ]($style) '
+style = 'fg:black bg:yellow'
+symbol_threshold = 1
+number_threshold = 1
 
 [git_branch]
-format = '[$branch]($style) '
-style = 'green'
+format = '[ $branch ]($style)'
+style = 'fg:black bg:green'
+only_attached = false
 
 [git_state]
-format = '[$state( $progress_current/$progress_total)]($style) '
-style = 'yellow'
+format = '[ $state( $progress_current/$progress_total) ]($style)'
+style = 'fg:black bg:red'
 
 [git_status]
-format = '([$all_status$ahead_behind]($style) )'
-style = 'yellow'
+format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style))'
+style = 'fg:black bg:bright-yellow'
+ahead = '>${count} '
+behind = '<${count} '
+diverged = '<${behind_count} >${ahead_count} '
+stashed = '*${count} '
+conflicted = '~${count} '
+staged = '+${count} '
+modified = '!${count} '
+untracked = '?${count} '
+deleted = 'x${count} '
 
 [character]
-success_symbol = '[>](green)'
-error_symbol = '[>](red)'
-vicmd_symbol = '[<](yellow)'
+success_symbol = '[>](bright-purple)'
+error_symbol = '[>](bright-purple)'
+vimcmd_symbol = '[<](bright-purple)'
+vimcmd_visual_symbol = '[V](bright-purple)'
+vimcmd_replace_symbol = '[^](bright-purple)'
+vimcmd_replace_one_symbol = '[^](bright-purple)'
