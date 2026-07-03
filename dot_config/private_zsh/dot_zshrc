@@ -129,6 +129,37 @@ if [ -n "${TMUX-}" ]; then
   unset fsh
 
   if command -v starship >/dev/null 2>&1; then
+    # stopwatch-style command duration (0.333, 1:05.123, 1:02:03.456)
+    # exported for starship's env_var module — its cmd_duration can't
+    # format sub-second precision
+    zmodload zsh/datetime
+    autoload -Uz add-zsh-hook
+    duration-preexec() {
+      __duration_t0="${EPOCHREALTIME}"
+    }
+    duration-precmd() {
+      if [ -n "${__duration_t0-}" ]; then
+        local -F elapsed=$(( EPOCHREALTIME - __duration_t0 ))
+        local -i ms=$(( int(elapsed * 1000 + 0.5) ))
+        local -i s=$(( ms / 1000 )); ms=$(( ms % 1000 ))
+        local -i m=$(( s / 60 ));    s=$(( s % 60 ))
+        local -i h=$(( m / 60 ));    m=$(( m % 60 ))
+        if (( h )); then
+          printf -v CMD_DUR_FMT '%d:%02d:%02d.%03d' "${h}" "${m}" "${s}" "${ms}"
+        elif (( m )); then
+          printf -v CMD_DUR_FMT '%d:%02d.%03d' "${m}" "${s}" "${ms}"
+        else
+          printf -v CMD_DUR_FMT '%d.%03d' "${s}" "${ms}"
+        fi
+        export CMD_DUR_FMT
+        unset __duration_t0
+      else
+        unset CMD_DUR_FMT
+      fi
+    }
+    add-zsh-hook preexec duration-preexec
+    add-zsh-hook precmd duration-precmd
+
     eval "$(starship init zsh)"
   fi
 fi

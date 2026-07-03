@@ -11,7 +11,7 @@
 add_newline = false
 
 format = """
-$time$cmd_duration$status
+$time${env_var.CMD_DUR_FMT}$status
 
 $username$hostname$directory$jobs$git_branch$git_state$git_status
 $character"""
@@ -22,9 +22,10 @@ format = '[$time]($style)'
 time_format = '%Y/%m/%d | %H:%M:%S'
 style = 'bright-black'
 
-[cmd_duration]
-min_time = 0
-format = '[ | $duration]($style)'
+# duration is computed and formatted by a zsh precmd hook (stopwatch
+# style, ms precision) — starship's own cmd_duration can't do this
+[env_var.CMD_DUR_FMT]
+format = '[ | $env_value]($style)'
 style = 'bright-black'
 
 [status]
