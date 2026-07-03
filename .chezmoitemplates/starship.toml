@@ -17,14 +17,14 @@
 {{- $pointl := "" -}}
 {{- if .unicode -}}
 {{- $pipe = "│" -}}
-{{- $lock = "" -}}
-{{- $branch = " " -}}
+{{- $lock = "" -}}
+{{- $branch = " " -}}
 {{- $ahead = "⇡" -}}
 {{- $behind = "⇣" -}}
 {{- $chevron = "❯" -}}
 {{- $chevleft = "❮" -}}
-{{- $point = "" -}}
-{{- $pointl = "" -}}
+{{- $point = "" -}}
+{{- $pointl = "" -}}
 {{- end }}
 
 add_newline = false
@@ -64,7 +64,7 @@ pipestatus_format = '[ {{ $pipe }} ](bright-black)[$pipestatus => $status]($styl
 pipestatus_separator = '{{ $pipe }}'
 
 [username]
-format = '[{{ $pointl }}](white)[ $user]($style)'
+format = '[ $user]($style)'
 style_user = 'fg:black bg:white'
 style_root = 'fg:black bg:red'
 
@@ -74,7 +74,7 @@ format = '[@$hostname ]($style)[{{ $point }}](white) '
 style = 'fg:black bg:white'
 
 [directory]
-format = '[{{ $pointl }}](blue)[ $path ]($style)[{{ $point }}](blue)([{{ $pointl }}](red)[ $read_only ]($read_only_style)[{{ $point }}](red)) '
+format = '[{{ $pointl }}](blue)[ $path ]($style)[{{ $point }}](blue)([ $read_only ]($read_only_style)[{{ $point }}](red)) '
 style = 'fg:black bg:blue'
 read_only = '{{ $lock }}'
 read_only_style = 'fg:black bg:red'
@@ -83,22 +83,22 @@ fish_style_pwd_dir_length = 1
 truncation_symbol = ''
 
 [jobs]
-format = '[{{ $pointl }}](yellow)[ +$number ]($style)[{{ $point }}](yellow) '
+format = '[ +$number ]($style)[{{ $point }}](yellow) '
 style = 'fg:black bg:yellow'
 symbol_threshold = 1
 number_threshold = 1
 
 [git_branch]
-format = '[{{ $pointl }}](green)[ {{ $branch }}$branch ]($style)[{{ $point }}](green)'
+format = '[ {{ $branch }}$branch ]($style)[{{ $point }}](green)'
 style = 'fg:black bg:green'
 only_attached = false
 
 [git_state]
-format = '[{{ $pointl }}](red)[ $state( $progress_current/$progress_total) ]($style)[{{ $point }}](red)'
+format = '[ $state( $progress_current/$progress_total) ]($style)[{{ $point }}](red)'
 style = 'fg:black bg:red'
 
 [git_status]
-format = '([{{ $pointl }}](bright-yellow)[ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style)[{{ $point }}](bright-yellow))'
+format = '([ $ahead_behind$stashed$conflicted$staged$modified$untracked$deleted ]($style)[{{ $point }}](bright-yellow))'
 style = 'fg:black bg:bright-yellow'
 ahead = '{{ $ahead }}${count} '
 behind = '{{ $behind }}${count} '
