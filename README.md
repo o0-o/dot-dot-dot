@@ -7,6 +7,7 @@ My dot files, managed with [chezmoi](https://www.chezmoi.io).
 * tmux
 * neovim
 * MesloLGSDZ Nerd Font Mono
+* gnupg + YubiKey (only for encrypted files)
 
 # Installation
 On a new machine:
@@ -24,6 +25,7 @@ chezmoi re-add                     # pull in edits made directly in ~
 chezmoi diff                       # preview pending changes
 chezmoi apply                      # converge ~ to source state
 chezmoi add ~/.config/foo          # start managing a new file
+chezmoi add --encrypt ~/.foo       # store gpg-encrypted (YubiKey)
 chezmoi cd                         # drop into the source git repo
 chezmoi update                     # pull remote + apply (other machines)
 ```

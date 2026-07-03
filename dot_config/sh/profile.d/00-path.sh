@@ -5,7 +5,7 @@ PATH='/usr/bin:/usr/sbin:/bin:/sbin'
 #Local sbin
 [ -d '/usr/local/sbin' ]       &&
 PATH="/usr/local/sbin:${PATH}" ||
-[ ! -d '/usr/local/sbin]' ]    ||
+[ ! -d '/usr/local/sbin' ]     ||
 return 1
 
 PATH="/usr/local/bin:${PATH}"
