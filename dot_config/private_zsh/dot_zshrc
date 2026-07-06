@@ -339,7 +339,28 @@ if [ -n "${TMUX-}" ]; then
         comp="${parts[i]}"
         if (( i < n && i != i_git && i != i_env &&
               i != i_py && i != i_node )); then
-          if [[ "${comp}" == .* ]]; then comp="${comp[1,2]}"
+          if (( i >= 2 )); then
+            # truncate to the shortest prefix that is unique among sibling
+            # directories (p10k truncate_to_unique / real fish behavior), so
+            # tab-completing the shown prefix lands on exactly one directory
+            local segreal="${PWD}" j
+            for (( j = i; j < n; j++ )); do segreal="${segreal:h}"; done
+            local parentreal="${segreal:h}" segname="${segreal:t}"
+            local -a sibs=( ${parentreal}/*(ND/) ); sibs=( ${sibs[@]:t} )
+            local -i k=1 matches
+            [[ "${segname}" == .* ]] && k=2
+            (( k > ${#segname} )) && k=${#segname}
+            while (( k < ${#segname} )); do
+              local pfx="${segname[1,k]}" s
+              matches=0
+              for s in "${sibs[@]}"; do
+                [[ "${s}" == "${pfx}"* ]] && (( ++matches ))
+              done
+              (( matches <= 1 )) && break
+              (( ++k ))
+            done
+            comp="${segname[1,k]}"
+          elif [[ "${comp}" == .* ]]; then comp="${comp[1,2]}"
           else comp="${comp[1,1]}"; fi
         fi
         col=''
