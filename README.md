@@ -21,9 +21,11 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${HOME}/.local/bin"
   init --apply https://github.com/o0-o/dot-dot-dot.git
 ```
 Machines still on the legacy home-as-git-repo layout migrate themselves:
-a run_once script archives the old repo to
-`~/dot-dot-dot.git.pre-chezmoi.tar.gz` and removes the legacy files
-before the first apply.
+a run_once script archives the current setup — full `.git` history plus
+the working-tree copy of every tracked file, so uncommitted edits are
+preserved — to `~/dot-dot-dot.pre-chezmoi.tar.gz`, then removes the
+legacy files before the first apply. If the archive can't be written the
+script aborts without deleting anything.
 
 Third-party pieces (fast-syntax-highlighting, tpm, and the starship
 prompt binary) are declared in `.chezmoiexternal.toml` and

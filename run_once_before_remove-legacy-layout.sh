@@ -5,8 +5,20 @@
 
 [ -d "${HOME}/.git" ] || exit 0
 
-# keep a local recovery copy of the old repo before removing it
-tar -czf "${HOME}/dot-dot-dot.git.pre-chezmoi.tar.gz" -C "${HOME}" .git
+# Recovery snapshot of the CURRENT setup before we remove anything:
+# .git (full history + submodule gitdirs under .git/modules) plus the
+# working-tree copy of every tracked file, so uncommitted edits are
+# captured too — a .git-only archive would silently drop them. Bail out
+# without deleting if the archive can't be written, so we never destroy
+# the legacy layout unless a backup exists.
+archive="${HOME}/dot-dot-dot.pre-chezmoi.tar.gz"
+{ printf '.git\0'
+  git --git-dir="${HOME}/.git" --work-tree="${HOME}" ls-files -z
+} | tar -czf "${archive}" -C "${HOME}" --null --files-from=- || {
+  printf 'legacy migration: failed to write %s; aborting cleanup\n' \
+    "${archive}" >&2
+  exit 1
+}
 
 rm -rf \
   "${HOME}/.git" \
