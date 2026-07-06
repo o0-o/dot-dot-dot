@@ -421,10 +421,16 @@ call s:h('FoldColumn', s:white, s:none)
 call s:h('Folded', s:white, s:none)
 
 call s:h('TabLineFill', s:none, s:none)
-call s:h('TabLine', s:white, s:none)
-call s:h('TabLineMod', s:white, s:none, [s:attrs.italic])
-call s:h('TabLineSel', s:black, s:blue, [s:attrs.bold])
-call s:h('TabLineSelMod', s:black, s:blue, [s:attrs.bold, s:attrs.italic])
+call s:h('TabLine', s:black, s:brightblack, [s:attrs.bold])
+call s:h('TabLineMod', s:black, s:brightblack, [s:attrs.bold, s:attrs.italic])
+call s:h('TabLineSel', s:black, s:white, [s:attrs.bold])
+call s:h('TabLineSelMod', s:black, s:white, [s:attrs.bold, s:attrs.italic])
+" Ribbon boundaries (tabby): band edges over the fill, solid transitions
+" around the selected buffer, background-colored thin slashes between the rest
+call s:h('TabLineEdge', s:brightblack, s:none)
+call s:h('TabLineSelEdge', s:white, s:brightblack)
+call s:h('TabLineSelEdgeOuter', s:white, s:none)
+call s:h('TabLineThin', s:bg, s:brightblack)
 "call s:h('BufferLineBackground', s:none, s:bg)
 "call s:h('BufferLineBufferSelected', s:black, s:blue)
 "call s:h('BufferLineBufferVisible', s:none, s:bg)
@@ -462,7 +468,7 @@ hi! link Directory    oBrightBlueBold
 hi! link ErrorMsg     oRedInverse
 "hi! link Folded       oBgDimWhite
 hi! link IncSearch    oYellowInverse
-hi! link LineNr       oBrightBlack
+call s:h('LineNr', s:brightblack, s:bgsubtle)
 "call s:h('LineNr', s:brightblue, s:black)
 hi! link MoreMsg      oWhiteBold
 hi! link Pmenu        oBgDimBlack

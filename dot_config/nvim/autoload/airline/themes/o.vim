@@ -33,7 +33,7 @@ let g:airline#themes#o#palette = {
 \   'normal': s:color_map(
 \       ['bg', 'brightblue'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -42,7 +42,7 @@ let g:airline#themes#o#palette = {
 \   'normal_modified': s:color_map(
 \       ['bg', 'cyan'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -51,7 +51,7 @@ let g:airline#themes#o#palette = {
 \   'insert': s:color_map(
 \       ['bg', 'green'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -60,7 +60,7 @@ let g:airline#themes#o#palette = {
 \   'insert_modified': s:color_map(
 \       ['bg', 'green'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -69,7 +69,7 @@ let g:airline#themes#o#palette = {
 \   'replace': s:color_map(
 \       ['bg', 'yellow'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -78,7 +78,7 @@ let g:airline#themes#o#palette = {
 \   'replace_modified': s:color_map(
 \       ['bg', 'yellow'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -87,7 +87,7 @@ let g:airline#themes#o#palette = {
 \   'visual': s:color_map(
 \       ['bg', 'yellow'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -96,7 +96,7 @@ let g:airline#themes#o#palette = {
 \   'visual_modified': s:color_map(
 \       ['bg', 'yellow'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -104,8 +104,8 @@ let g:airline#themes#o#palette = {
 \     ),
 \   'inactive': s:color_map(
 \       ['bg', 'brightblack'],
-\       ['white', 'bg'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
+\       ['white', 'bgsubtle'],
 \       {
 \         'airline_warning': s:clr('bg', 'yellow'),
 \         'airline_error': s:clr('bg', 'red'),
@@ -114,9 +114,9 @@ let g:airline#themes#o#palette = {
 \   'terminal': s:color_map(
 \       ['bg', 'green'],
 \       ['white', 'brightblack'],
-\       ['white', 'bg'],
+\       ['white', 'bgsubtle'],
 \       {
-\         'airline_term': s:clr('white', 'bg'),
+\         'airline_term': s:clr('white', 'bgsubtle'),
 \       },
 \     ),
 \}
@@ -140,7 +140,7 @@ endif
 " CtrlP: {{{2
 if exists('g:loaded_ctrlp')
   let g:airline#themes#o#palette.ctrlp = airline#extensions#ctrlp#generate_color_map(
-        \ s:clr('white', 'bg'),
+        \ s:clr('white', 'bgsubtle'),
         \ s:clr('white', 'brightblack'),
         \ s:clr('white', 'brightblue'),
         \)
