@@ -348,10 +348,14 @@ if [ -n "${TMUX-}" ]; then
             local parentreal="${segreal:h}" segname="${segreal:t}"
             local -a sibs=( ${parentreal}/*(ND/) ); sibs=( ${sibs[@]:t} )
             local -i k=1 matches
+            # declared once, not inside the loop: re-running `local` on a
+            # bare (valueless) name that is already set makes zsh print
+            # `name=value` to stdout — which would leak above the prompt
+            local pfx='' s=''
             [[ "${segname}" == .* ]] && k=2
             (( k > ${#segname} )) && k=${#segname}
             while (( k < ${#segname} )); do
-              local pfx="${segname[1,k]}" s
+              pfx="${segname[1,k]}"
               matches=0
               for s in "${sibs[@]}"; do
                 [[ "${s}" == "${pfx}"* ]] && (( ++matches ))
