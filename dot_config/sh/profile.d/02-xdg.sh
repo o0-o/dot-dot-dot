@@ -4,6 +4,7 @@
 XDG_DATA_HOME="${HOME}/.local/share"
 XDG_CONFIG_HOME="${HOME}/.config"
 XDG_CACHE_HOME="${HOME}/.cache"
+XDG_STATE_HOME="${HOME}/.local/state"
 XDG_RUNTIME_DIR="${HOME}/.run"
 XDG_BIN_HOME="${HOME}/.local/bin"
 XDG_DATA_DIRS='/usr/local/share:/usr/share'
@@ -17,8 +18,8 @@ else
 fi
 
 for xdg_dir in "${XDG_DATA_HOME}" "${XDG_CONFIG_HOME}" \
-               "${XDG_CACHE_HOME}" "${XDG_RUNTIME_DIR}" \
-               "${XDG_BIN_HOME}"; do
+               "${XDG_CACHE_HOME}" "${XDG_STATE_HOME}" \
+               "${XDG_RUNTIME_DIR}" "${XDG_BIN_HOME}"; do
   [ -d "${xdg_dir}" ] || install -m '700' -d "${xdg_dir}"
 done
 unset xdg_dir
@@ -30,4 +31,4 @@ case ":${PATH}:" in
 esac
 
 export XDG_DATA_HOME XDG_CONFIG_HOME XDG_DATA_DIRS XDG_CONFIG_DIRS \
-       XDG_CACHE_HOME XDG_RUNTIME_DIR XDG_BIN_HOME PATH
+       XDG_CACHE_HOME XDG_STATE_HOME XDG_RUNTIME_DIR XDG_BIN_HOME PATH
