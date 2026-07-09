@@ -1,0 +1,12 @@
+#!/bin/sh
+# (Re)load the launchd env agent whenever its plist changes, and apply
+# the vars to the running GUI session immediately (RunAtLoad only fires
+# on the agent's own start, so bootstrap it now).
+# plist hash: {{ include "Library/LaunchAgents/ooo.o0-o.env.plist.tmpl" | sha256sum }}
+
+label='ooo.o0-o.env'
+plist="${HOME}/Library/LaunchAgents/${label}.plist"
+domain="gui/$(id -u)"
+
+launchctl bootout "${domain}/${label}" 2>/dev/null || :
+launchctl bootstrap "${domain}" "${plist}"
