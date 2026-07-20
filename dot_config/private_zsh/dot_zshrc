@@ -499,7 +499,7 @@ if [ -n "${TMUX-}" ]; then
           __bc $' #[fg=#{?pane_active,colour3,colour8}]\uf007 '"${PROMPT_CTX_REMOTE//"#"/"##"}" colour3
         fi
         __border_ansi2tmux "${CWD_PATH_FMT//"#"/"##"}"
-        __bc " #[fg=#{?pane_active,colour6,colour8}]${REPLY}" colour6
+        __bc $' #[fg=#{?pane_active,colour6,colour8}]\uf115 '"${REPLY}" colour6
         local njobs=${(%):-%j}
         (( ${njobs:-0} )) &&
           __bc $' #[fg=#{?pane_active,colour3,colour8}]\uf013 '"${njobs}" colour3
