@@ -1,0 +1,189 @@
+tap "d12frosted/emacs-plus"
+tap "fluxcd/tap"
+tap "siderolabs/tap", trusted: true
+# Spell checker with better logic than ispell
+brew "aspell"
+# Tool for generating GNU Standards-compliant Makefiles
+brew "automake"
+# Manage your dotfiles across multiple diverse machines, securely
+brew "chezmoi"
+# CLI to install, manage & troubleshoot Kubernetes clusters running Cilium
+brew "cilium-cli"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
+# OpenAI's coding agent that runs in your terminal
+brew "codex"
+# GNU File, Shell, and Text utilities
+brew "coreutils"
+# Container Signing
+brew "cosign"
+# Secure runtime for JavaScript and TypeScript
+brew "deno"
+# Dictionary Server Protocol (RFC2229) client
+brew "dict"
+# Load/unload environment variables based on $PWD
+brew "direnv"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# GitHub command-line tool
+brew "gh"
+# Git extension for versioning large files
+brew "git-lfs"
+# Git LFS plugin that uploads and downloads using the Xet protocol
+brew "git-xet"
+# GNU Privacy Guard (OpenPGP)
+brew "gnupg"
+# Kubernetes package manager
+brew "helm"
+# Improved top (interactive process viewer)
+brew "htop"
+# Network, Service & Security Observability for Kubernetes using eBPF
+brew "hubble"
+# Update of iperf: measures TCP, UDP, and SCTP bandwidth
+brew "iperf3"
+# Utility for IPMI control with kernel driver or LAN interface
+brew "ipmitool"
+# Kubernetes command-line interface
+brew "kubernetes-cli"
+# Style and grammar checker
+brew "languagetool"
+# Matroska media files manipulation tools
+brew "mkvtoolnix"
+# Ambitious Vim-fork focused on extensibility and agility
+brew "neovim"
+# Port scanning utility for large networks
+brew "nmap"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node@20"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node@22"
+# Development kit for the Java programming language
+brew "openjdk"
+# 7-Zip (high compression file archiver) implementation
+brew "p7zip"
+# Swiss-army knife of markup format conversion
+brew "pandoc"
+# Pinentry for GPG on Mac
+brew "pinentry-mac"
+# Tool for managing OCI containers and pods
+brew "podman"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
+# Object-relational database system
+brew "postgresql@18", restart_service: :changed, link: true
+# Simple powerful testing with Python
+brew "pytest", link: false
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.10"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.11"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.12"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.9"
+# QR Code generation
+brew "qrencode"
+# Utility that provides fast incremental file transfer
+brew "rsync"
+# Static analysis and lint tool, for (ba)sh scripts
+brew "shellcheck"
+# Non-interactive SSH password auth
+brew "sshpass"
+# OCR (Optical Character Recognition) engine
+brew "tesseract"
+# Enables extra languages support for Tesseract
+brew "tesseract-lang"
+# Terminal multiplexer
+brew "tmux"
+# Display directories as trees (with optional color/HTML output)
+brew "tree"
+# Command-line unarchiving tools supporting multiple formats
+brew "unar"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
+# Internet file retriever
+brew "wget"
+# Port of OpenAI's Whisper model in C/C++
+brew "whisper-cpp"
+# Tool for managing your YubiKey configuration
+brew "ykman"
+# Feature-rich command-line audio/video downloader
+brew "yt-dlp"
+# GNU Emacs text editor
+brew "d12frosted/emacs-plus/emacs-plus@30", trusted: true
+# Flux CLI
+brew "fluxcd/tap/flux", trusted: true
+# CLI for out-of-band management of Kubernetes nodes created by Talos
+brew "siderolabs/tap/talosctl"
+# Password manager that keeps all passwords secure behind one password
+cask "1password"
+# Command-line interface for 1Password
+cask "1password-cli"
+# Application uninstaller
+cask "appcleaner"
+# Node-based image, video and audio generator
+cask "comfy"
+# Monitors and peripherals manager
+cask "ddpm"
+# Voice and text chat software
+cask "discord"
+# Online diagram software
+cask "drawio"
+# Matrix collaboration client
+cask "element"
+cask "font-meslo-for-powerlevel10k"
+cask "font-meslo-lg-nerd-font"
+# Speech to text application
+cask "handy"
+# UI for Kubernetes
+cask "headlamp"
+# Jellyfin desktop client
+cask "jellyfin-media-player"
+# GPU-based terminal emulator
+cask "kitty"
+# Provides access to camera controls
+cask "logitech-camera-settings"
+# Trims video and audio files losslessly
+cask "losslesscut"
+# Video format converter (transcoder)
+cask "makemkv"
+# Provides updates to various Microsoft products
+cask "microsoft-auto-update"
+# Meet, chat, call, and collaborate in just one place
+cask "microsoft-teams"
+# Open-source software for live streaming and screen recording
+cask "obs"
+# Knowledge base that works on top of a local folder of plain text Markdown files
+cask "obsidian"
+# Browse, manage, inspect containers and images
+cask "podman-desktop"
+# Toolbox companion for QMK Firmware
+cask "qmk-toolbox"
+# Catalogue of hi-res music for streaming and download
+cask "qobuz"
+# Team messaging, video meetings, and business phone
+cask "ringcentral"
+# PDF reader and note-taking application
+cask "skim"
+# Video game digital distribution service
+cask "steam"
+# AI image enhancer
+cask "topaz-photo-ai"
+# Set up, configure, manage and analyze your UniFi network
+cask "ubiquiti-unifi-controller"
+# Virtual machines UI using QEMU
+cask "utm"
+# Web browser with built-in email client focusing on customization and control
+cask "vivaldi"
+# Multimedia player
+cask "vlc"
+# Full-featured companion app to the YubiKey
+cask "yubico-authenticator"
+# Video communication and virtual meeting platform
+cask "zoom"
+uv "pyright"
+npm "single-file-cli"

@@ -1,0 +1,10 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Install any Homebrew packages missing from the Brewfile's declaration.
+# Re-runs whenever the Brewfile changes (chezmoi run_onchange, keyed on the
+# hash below). --no-upgrade: only install what's absent, never upgrade here.
+# Brewfile hash: {{ include "dot_config/homebrew/Brewfile" | sha256sum }}
+set -eu
+command -v brew >/dev/null 2>&1 || exit 0
+brew bundle --file="$HOME/.config/homebrew/Brewfile" --no-upgrade
+{{ end -}}

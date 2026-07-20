@@ -1,2 +1,7 @@
 LICENSE
 README.md
+
+# Homebrew is macOS-only here; keep the Brewfile off other systems.
+{{ if ne .chezmoi.os "darwin" }}
+.config/homebrew
+{{ end }}
