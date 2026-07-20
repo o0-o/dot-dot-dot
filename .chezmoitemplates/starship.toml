@@ -133,3 +133,12 @@ vimcmd_symbol = '[{{ $chevleft }}](bright-purple)'
 vimcmd_visual_symbol = '[V](bright-purple)'
 vimcmd_replace_symbol = '[^](bright-purple)'
 vimcmd_replace_one_symbol = '[^](bright-purple)'
+
+# minimal profile — the post-command info line (timestamp/duration/exit
+# status) plus the vi-aware chevron. Selected inside tmux by .zshrc,
+# where the pane border carries cwd/git/k8s; the info-line group renders
+# only when a command actually ran, so fresh prompts are just the chevron.
+[profiles]
+tmux = """
+(${env_var.CMD_STAMP}${env_var.CMD_DUR_FMT}${env_var.CMD_STATUS_FMT}
+)$character"""

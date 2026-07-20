@@ -51,6 +51,10 @@ if command -v direnv >/dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 
+## Claude Code
+# clicks land on permission-prompt options as often as intended; scroll still works
+export CLAUDE_CODE_DISABLE_MOUSE_CLICKS=1
+
 ## Completion — single compinit, dump in cache
 if [ -n "${HOMEBREW_PREFIX-}" ] &&
    [ -d "${HOMEBREW_PREFIX}/share/zsh/site-functions" ]; then
@@ -343,11 +347,11 @@ if [ -n "${TMUX-}" ]; then
             # truncate to the shortest prefix that is unique among sibling
             # directories (p10k truncate_to_unique / real fish behavior), so
             # tab-completing the shown prefix lands on exactly one directory
-            local segreal="${PWD}" j
+            local segreal="${PWD}" j=0
             for (( j = i; j < n; j++ )); do segreal="${segreal:h}"; done
             local parentreal="${segreal:h}" segname="${segreal:t}"
             local -a sibs=( ${parentreal}/*(ND/) ); sibs=( ${sibs[@]:t} )
-            local -i k=1 matches
+            local -i k=1 matches=0
             # declared once, not inside the loop: re-running `local` on a
             # bare (valueless) name that is already set makes zsh print
             # `name=value` to stdout — which would leak above the prompt
@@ -393,12 +397,17 @@ if [ -n "${TMUX-}" ]; then
     k8s-seg-precmd() {
       unset K8S_SEG
       [ -n "${KUBECONFIG-}" ] && [ -r "${KUBECONFIG}" ] || return 0
-      local info
-      info="$(kubectl config view --minify --output 'jsonpath={.contexts[0].name}{"\t"}{.contexts[0].context.cluster}' 2>/dev/null)" ||
-      return 0
-      [ -n "${info}" ] || return 0
-      local ctx="${info%%$'\t'*}"
-      local cluster="${info#*$'\t'}"
+      # read the current context straight from the config file — no kubectl
+      # dependency (it may be a broken symlink or off PATH; the file is the
+      # source of truth regardless)
+      local ctx='' cluster=''
+      ctx="$(sed -n 's/^current-context:[[:space:]]*//p' "${KUBECONFIG}" 2>/dev/null | head -1)"
+      [ -n "${ctx}" ] || return 0
+      cluster="$(awk -v c="${ctx}" '
+        $1=="-" && $2=="context:" { cl="" }
+        $1=="cluster:"            { cl=$2 }
+        $1=="name:" && $2==c      { print cl; exit }
+      ' "${KUBECONFIG}" 2>/dev/null)"
 
       local name
       if [ -n "${cluster}" ]; then
@@ -439,6 +448,107 @@ if [ -n "${TMUX-}" ]; then
     }
     add-zsh-hook precmd k8s-seg-precmd
 
+    # tmux pane border: mirror the prompt's location segments (cwd, git,
+    # k8s) into a pane-local @prompt option. tmux can't compute git/k8s
+    # (shell-only) and its border wants #[...] styling rather than ANSI,
+    # so a precmd forwards them, translating the cwd/k8s hooks' SGR
+    # escapes to tmux style syntax; git/k8s colors mirror starship.toml.
+    if [ -n "${TMUX-}" ]; then
+      # ANSI SGR (only the codes the prompt hooks emit) -> tmux #[...];
+      # result returned in REPLY to avoid a subshell fork each prompt
+      __border_ansi2tmux() {
+        emulate -L zsh; setopt extendedglob
+        local s=$1
+        s=${s//$'\e'\[22\;24\;29\;36m/'#[default]#[fg=#{?pane_active,colour6,colour8}]'}
+        s=${s//$'\e'\[24\;29m/}
+        s=${s//$'\e'\[1m/'#[bold]'}
+        s=${s//$'\e'\[4m/'#[underscore]'}
+        s=${s//$'\e'\[9m/'#[strikethrough]'}
+        s=${s//$'\e'\[96m/'#[fg=#{?pane_active,colour14,colour8}]'}
+        s=${s//$'\e'\[35m/'#[fg=#{?pane_active,colour5,colour8}]'}
+        s=${s//$'\e'\[91m/'#[fg=#{?pane_active,colour9,colour8}]'}
+        s=${s//$'\e'\[0#m/'#[default]'}
+        s=${s//$'\e'\[[0-9;]#m/}
+        REPLY=$s
+      }
+      # colored separator between two section colors ($1 left, $2 right);
+      # arrows are filled on the active pane, thin on idle (via @ao/@ai)
+      __border_sep() {
+        REPLY="#[fg=#{?pane_active,$1,colour8}] #{E:@ao}#[fg=#{?pane_active,colour15,colour8}]#{E:@fl}#[fg=#{?pane_active,$2,colour8}]#{E:@ai} #[default]"
+      }
+      border-seg-precmd() {
+        emulate -L zsh; setopt extendedglob
+        # out = idle form (colored text); out_active = active form (each
+        # section a filled block). Separators are identical in both (arrows
+        # colored per neighbor); only the sections differ (text vs block).
+        local out='' out_active='' gseg gcol seg segb last
+        local pcol=colour15   # #P color (white, active block / idle text)
+        # leading separator: #P -> path
+        # leading separator (#P -> path): #P's white extends into the space,
+        # and the out-triangle stays solid on the active pane
+        REPLY="#[bg=#{?pane_active,${pcol},colour8}] #[fg=#{?pane_active,${pcol},colour8} bg=default]#{E:@point-out}#[fg=#{?pane_active,colour15,colour8}]#{E:@fl}#[fg=#{?pane_active,colour6,colour8}]#{E:@ai} #[default]"
+        out+="${REPLY}"; out_active+="${REPLY}"
+        __border_ansi2tmux "${CWD_PATH_FMT//"#"/"##"}"
+        seg="#[fg=#{?pane_active,colour6,colour8}]${REPLY}"
+        segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
+        out+="${seg}#[default]"; out_active+="${segb}#[default]"
+        last=colour6
+        # jobs (colour3), when background jobs exist
+        local njobs=${(%):-%j}
+        if (( ${njobs:-0} )); then
+          __border_sep "${last}" colour3; out+="${REPLY}"; out_active+="${REPLY}"
+          seg=$'#[fg=#{?pane_active,colour3,colour8}] '"${njobs}"
+          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
+          out+="${seg}#[default]"; out_active+="${segb}#[default]"
+          last=colour3
+        fi
+        # python (colour14), when a virtualenv is active
+        if [ -n "${VIRTUAL_ENV-}" ]; then
+          local pyver='' pydisp=''
+          pyver=$(grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' "${VIRTUAL_ENV}/pyvenv.cfg" 2>/dev/null | head -1)
+          pydisp="${pyver:-${VIRTUAL_ENV:t}}"
+          __border_sep "${last}" colour14; out+="${REPLY}"; out_active+="${REPLY}"
+          seg=$'#[fg=#{?pane_active,colour14,colour8}] '"${pydisp//"#"/"##"}"
+          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
+          out+="${seg}#[default]"; out_active+="${segb}#[default]"
+          last=colour14
+        fi
+        if [ -n "${K8S_SEG-}" ]; then
+          __border_sep "${last}" colour12; out+="${REPLY}"; out_active+="${REPLY}"
+          __border_ansi2tmux "${K8S_SEG//"#"/"##"}"
+          seg="#[fg=#{?pane_active,colour12,colour8}]󱃾 ${REPLY}"
+          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
+          out+="${seg}#[default]"; out_active+="${segb}#[default]"
+          last=colour12
+        fi
+        gseg="${GIT_SEG_CONFLICT-}"; gcol=colour1
+        [ -z "${gseg}" ] && { gseg="${GIT_SEG_MODIFIED-}";  gcol=colour11; }
+        [ -z "${gseg}" ] && { gseg="${GIT_SEG_UNTRACKED-}"; gcol=colour10; }
+        [ -z "${gseg}" ] && { gseg="${GIT_SEG_CLEAN-}";     gcol=colour2;  }
+        if [ -n "${gseg}" ]; then
+          __border_sep "${last}" "${gcol}"; out+="${REPLY}"; out_active+="${REPLY}"
+          seg="#[fg=#{?pane_active,${gcol},colour8}]"$' '"${gseg//"#"/"##"}"
+          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
+          out+="${seg}#[default]"; out_active+="${segb}#[default]"
+          last="${gcol}"
+        fi
+        # right edge cap in the last section's color (pid now sits with #P)
+        REPLY=" #[fg=#{?pane_active,${last},colour8} bg=default]#{E:@point-thin-out}#[default]"
+        out+="${REPLY}"; out_active+="${REPLY}"
+        tmux set -p @prompt "${out}"
+        tmux set -p @prompt_active "${out_active}"
+      }
+      add-zsh-hook precmd border-seg-precmd
+    fi
+
     eval "$(starship init zsh)"
+
+    # inside tmux the pane border carries cwd/git/k8s, so collapse the
+    # prompt itself to just the chevron (the "tmux" starship profile);
+    # the guard keeps the full prompt for any future out-of-tmux use
+    if [ -n "${TMUX-}" ]; then
+      PROMPT="${PROMPT/ prompt / prompt --profile tmux }"
+      RPROMPT=''
+    fi
   fi
 fi
