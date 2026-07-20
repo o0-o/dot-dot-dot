@@ -143,5 +143,5 @@ format = '$env_value'
 
 [profiles]
 tmux = """
-(${env_var.CMD_INFO}
+(  ${env_var.CMD_INFO}
 )$character"""
