@@ -138,7 +138,10 @@ vimcmd_replace_one_symbol = '[^](bright-purple)'
 # status) plus the vi-aware chevron. Selected inside tmux by .zshrc,
 # where the pane border carries cwd/git/k8s; the info-line group renders
 # only when a command actually ran, so fresh prompts are just the chevron.
+[env_var.CMD_INFO]
+format = '$env_value'
+
 [profiles]
 tmux = """
-(${env_var.CMD_STAMP}${env_var.CMD_DUR_FMT}${env_var.CMD_STATUS_FMT}
+(${env_var.CMD_INFO}
 )$character"""

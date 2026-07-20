@@ -165,10 +165,11 @@ if [ -n "${TMUX-}" ]; then
     duration-preexec() {
       # a bare `clear` reads as a fresh screen: skip the next info line
       if [[ "${1//[[:space:]]/}" == 'clear' ]]; then
-        unset __duration_t0
+        unset __duration_t0 __cmd_cwd
         return 0
       fi
       __duration_t0="${EPOCHREALTIME}"
+      __cmd_cwd="${PWD}"
     }
     # Ctrl-L clears without running a command; drop the info line and
     # re-render the prompt so it looks like a fresh screen too
@@ -539,6 +540,84 @@ if [ -n "${TMUX-}" ]; then
         tmux set -p @prompt_active "${out_active}"
       }
       add-zsh-hook precmd border-seg-precmd
+      # fish-style compression of an arbitrary dir (git root kept full),
+      # mirroring the pane-title path; plain text for the info line
+      __path_compress() {
+        emulate -L zsh; setopt extendedglob localoptions
+        local dir="${1}"
+        local abbrev="${dir}"
+        [[ "${abbrev}" == "${HOME}" ]] && abbrev='~'
+        [[ "${abbrev}" == "${HOME}/"* ]] && abbrev="~/${abbrev#${HOME}/}"
+        local -a parts=("${(s:/:)abbrev}") dp=("${(s:/:)dir}")
+        local -i n=${#parts} n_full=${#dp} i_git=0
+        local groot=''
+        groot="$(command git -C "${dir}" rev-parse --show-toplevel 2>/dev/null)"
+        if [ -n "${groot}" ]; then
+          local -a gp=("${(s:/:)groot}")
+          i_git=$(( n - (n_full - ${#gp}) ))
+        fi
+        local -i i j=0 k=1 matches=0
+        local out='' comp segreal parentreal segname pfx='' s=''
+        local -a sibs
+        for (( i=1; i<=n; i++ )); do
+          comp="${parts[i]}"
+          if (( i < n && i != i_git )); then
+            if (( i >= 2 )); then
+              segreal="${dir}"
+              for (( j = i; j < n; j++ )); do segreal="${segreal:h}"; done
+              parentreal="${segreal:h}"; segname="${segreal:t}"
+              sibs=( ${parentreal}/*(ND/) ); sibs=( ${sibs[@]:t} )
+              k=1; [[ "${segname}" == .* ]] && k=2
+              (( k > ${#segname} )) && k=${#segname}
+              while (( k < ${#segname} )); do
+                pfx="${segname[1,k]}"; matches=0
+                for s in "${sibs[@]}"; do [[ "${s}" == "${pfx}"* ]] && (( ++matches )); done
+                (( matches <= 1 )) && break
+                (( ++k ))
+              done
+              comp="${segname[1,k]}"
+            elif [[ "${comp}" == .* ]]; then comp="${comp[1,2]}"
+            else comp="${comp[1,1]}"; fi
+          fi
+          out+="${comp}"
+          (( i < n )) && out+='/'
+        done
+        REPLY="${out}"
+      }
+      # post-command info line: a return-code badge (green check / red exit
+      # code), a gray timestamp/duration segment, and the origin cwd appended
+      # only when the command changed directory (the destination is already
+      # live in the pane title). Built as one raw-ANSI string; starship emits
+      # it verbatim, %{%}-wrapping the escapes for zsh.
+      build-footer-precmd() {
+        emulate -L zsh
+        [ -n "${CMD_DUR_FMT-}" ] || { unset CMD_INFO; return 0; }
+        local rccol glyph stamp cwd='' e=$'\e'
+        local ascii=0; [ -n "${STARSHIP_CONFIG-}" ] && ascii=1
+        local le tr gle div
+        if (( ascii )); then
+          le='\'; tr='/'; gle='/'; div='/'
+        else
+          le=$'\ue0be'; tr=$'\ue0bc'; gle=$'\ue0ba'; div=$'\ue0bb'
+        fi
+        if [ -n "${CMD_STATUS_FMT-}" ]; then
+          rccol=1; glyph="${CMD_STATUS_FMT}"
+        else
+          rccol=2; glyph=$'\u2713'; (( ascii )) && glyph='ok'
+        fi
+        strftime -s stamp "%Y/%m/%d %H:%M:%S" "${EPOCHSECONDS}"
+        if [ -n "${__cmd_cwd-}" ] && [ "${__cmd_cwd}" != "${PWD}" ]; then
+          __path_compress "${__cmd_cwd}"; cwd="${REPLY}"
+        fi
+        local RC="${e}[38;5;${rccol};49m" RCB="${e}[38;5;0;48;5;${rccol}m"
+        local G8D="${e}[38;5;8;49m" G8B="${e}[38;5;0;48;5;8m" D="${e}[0m"
+        local info="${RC}${le}${RCB} ${glyph} ${RC}${tr}"
+        local gray="${G8D}${gle}${G8B} ${stamp} ${div} ${CMD_DUR_FMT} ${G8D}${tr}"
+        local tail=''
+        [ -n "${cwd}" ] && tail="${G8D} ${cwd}"
+        export CMD_INFO="${info}${gray}${tail}${D}"
+      }
+      add-zsh-hook precmd build-footer-precmd
     fi
 
     eval "$(starship init zsh)"
