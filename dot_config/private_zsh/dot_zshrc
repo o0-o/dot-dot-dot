@@ -491,6 +491,13 @@ if [ -n "${TMUX-}" ]; then
             out+=" #[fg=#{?pane_active,${last},colour8}]#{E:@point-thin-out}"
           out+="$1#[default]"; last="$2"
         }
+        # user context: root (red) or a changed/remote user@host (yellow),
+        # mirroring PROMPT_CTX_* from the prompt; first crumb when present
+        if [ -n "${PROMPT_CTX_ROOT-}" ]; then
+          __bc $' #[fg=#{?pane_active,colour1,colour8}]\uf007 '"${PROMPT_CTX_ROOT//"#"/"##"}" colour1
+        elif [ -n "${PROMPT_CTX_REMOTE-}" ]; then
+          __bc $' #[fg=#{?pane_active,colour3,colour8}]\uf007 '"${PROMPT_CTX_REMOTE//"#"/"##"}" colour3
+        fi
         __border_ansi2tmux "${CWD_PATH_FMT//"#"/"##"}"
         __bc " #[fg=#{?pane_active,colour6,colour8}]${REPLY}" colour6
         local njobs=${(%):-%j}
