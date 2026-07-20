@@ -479,65 +479,40 @@ if [ -n "${TMUX-}" ]; then
       }
       border-seg-precmd() {
         emulate -L zsh; setopt extendedglob
-        # out = idle form (colored text); out_active = active form (each
-        # section a filled block). Separators are identical in both (arrows
-        # colored per neighbor); only the sections differ (text vs block).
-        local out='' out_active='' gseg gcol seg segb last
-        local pcol=colour15   # #P color (white, active block / idle text)
-        # leading separator: #P -> path
-        # leading separator (#P -> path): #P's white extends into the space,
-        # and the out-triangle stays solid on the active pane
-        REPLY="#[bg=#{?pane_active,${pcol},colour8}] #[fg=#{?pane_active,${pcol},colour8} bg=default]#{E:@point-out}#[fg=#{?pane_active,colour15,colour8}]#{E:@fl}#[fg=#{?pane_active,colour6,colour8}]#{E:@ai} #[default]"
-        out+="${REPLY}"; out_active+="${REPLY}"
+        # breadcrumb chain: each section is plain text in its own color,
+        # joined by a thin > whose color is the PREVIOUS section's (a layered
+        # continuation). On an inactive pane every color collapses to colour8.
+        # #P (filled block) + pid live in pane-border-format; @prompt is the
+        # rest of the chain and starts at the path (no leading arrow).
+        local out='' last='' gseg gcol
+        __bc() {  # $1 = styled content (leading space); $2 = this section's color
+          [ -n "${out}" ] &&
+            out+=" #[fg=#{?pane_active,${last},colour8}]#{E:@point-thin-out}"
+          out+="$1#[default]"; last="$2"
+        }
         __border_ansi2tmux "${CWD_PATH_FMT//"#"/"##"}"
-        seg="#[fg=#{?pane_active,colour6,colour8}]${REPLY}"
-        segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
-        out+="${seg}#[default]"; out_active+="${segb}#[default]"
-        last=colour6
-        # jobs (colour3), when background jobs exist
+        __bc " #[fg=#{?pane_active,colour6,colour8}]${REPLY}" colour6
         local njobs=${(%):-%j}
-        if (( ${njobs:-0} )); then
-          __border_sep "${last}" colour3; out+="${REPLY}"; out_active+="${REPLY}"
-          seg=$'#[fg=#{?pane_active,colour3,colour8}] '"${njobs}"
-          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
-          out+="${seg}#[default]"; out_active+="${segb}#[default]"
-          last=colour3
-        fi
-        # python (colour14), when a virtualenv is active
+        (( ${njobs:-0} )) &&
+          __bc $' #[fg=#{?pane_active,colour3,colour8}]\uf013 '"${njobs}" colour3
         if [ -n "${VIRTUAL_ENV-}" ]; then
           local pyver='' pydisp=''
           pyver=$(grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' "${VIRTUAL_ENV}/pyvenv.cfg" 2>/dev/null | head -1)
           pydisp="${pyver:-${VIRTUAL_ENV:t}}"
-          __border_sep "${last}" colour14; out+="${REPLY}"; out_active+="${REPLY}"
-          seg=$'#[fg=#{?pane_active,colour14,colour8}] '"${pydisp//"#"/"##"}"
-          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
-          out+="${seg}#[default]"; out_active+="${segb}#[default]"
-          last=colour14
+          __bc $' #[fg=#{?pane_active,colour14,colour8}]\ue73c '"${pydisp//"#"/"##"}" colour14
         fi
         if [ -n "${K8S_SEG-}" ]; then
-          __border_sep "${last}" colour12; out+="${REPLY}"; out_active+="${REPLY}"
           __border_ansi2tmux "${K8S_SEG//"#"/"##"}"
-          seg="#[fg=#{?pane_active,colour12,colour8}]󱃾 ${REPLY}"
-          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
-          out+="${seg}#[default]"; out_active+="${segb}#[default]"
-          last=colour12
+          __bc $' #[fg=#{?pane_active,colour12,colour8}]\U000f10fe '"${REPLY}" colour12
         fi
         gseg="${GIT_SEG_CONFLICT-}"; gcol=colour1
         [ -z "${gseg}" ] && { gseg="${GIT_SEG_MODIFIED-}";  gcol=colour11; }
         [ -z "${gseg}" ] && { gseg="${GIT_SEG_UNTRACKED-}"; gcol=colour10; }
         [ -z "${gseg}" ] && { gseg="${GIT_SEG_CLEAN-}";     gcol=colour2;  }
-        if [ -n "${gseg}" ]; then
-          __border_sep "${last}" "${gcol}"; out+="${REPLY}"; out_active+="${REPLY}"
-          seg="#[fg=#{?pane_active,${gcol},colour8}]"$' '"${gseg//"#"/"##"}"
-          segb="${seg//"#[fg=colour"/"#[fg=colour0 bg=colour"}"
-          out+="${seg}#[default]"; out_active+="${segb}#[default]"
-          last="${gcol}"
-        fi
-        # right edge cap in the last section's color (pid now sits with #P)
-        REPLY=" #[fg=#{?pane_active,${last},colour8} bg=default]#{E:@point-thin-out}#[default]"
-        out+="${REPLY}"; out_active+="${REPLY}"
+        [ -n "${gseg}" ] &&
+          __bc $' #[fg=#{?pane_active,'"${gcol}"$',colour8}]\uf126 '"${gseg//"#"/"##"}" "${gcol}"
+        [ -n "${out}" ] && out+=" #[fg=#{?pane_active,${last},colour8}]#{E:@point-thin-out}"
         tmux set -p @prompt "${out}"
-        tmux set -p @prompt_active "${out_active}"
       }
       add-zsh-hook precmd border-seg-precmd
       # fish-style compression of an arbitrary dir (git root kept full),
