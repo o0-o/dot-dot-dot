@@ -181,8 +181,7 @@ if [ -n "${TMUX-}" ]; then
     zle -N clear-screen-fresh
     bindkey '^L' clear-screen-fresh
     duration-precmd() {
-      local -i last="${?}"
-      local -a pipe_codes=("${pipestatus[@]}")
+      local last=$? pipe_codes=("${pipestatus[@]}")
       if [ -n "${__duration_t0-}" ]; then
         local -F elapsed=$(( EPOCHREALTIME - __duration_t0 ))
         local -i ms=$(( int(elapsed * 1000 + 0.5) ))
@@ -199,7 +198,9 @@ if [ -n "${TMUX-}" ]; then
         strftime -s CMD_STAMP "%Y/%m/%d ${__prompt_sep} %H:%M:%S" \
           "${EPOCHSECONDS}"
         unset CMD_STATUS_FMT
-        if (( last )); then
+        local -i c anyfail=0
+        for c in "${pipe_codes[@]}"; do (( c )) && { anyfail=1; break; }; done
+        if (( anyfail )); then
           if (( ${#pipe_codes} > 1 )); then
             local code joined=''
             for code in "${pipe_codes[@]}"; do
@@ -567,30 +568,38 @@ if [ -n "${TMUX-}" ]; then
       build-footer-precmd() {
         emulate -L zsh
         [ -n "${CMD_DUR_FMT-}" ] || { unset CMD_INFO; return 0; }
-        local rccol glyph stamp cwd='' e=$'\e'
+        local stamp cwd='' e=$'\e'
         local ascii=0; [ -n "${STARSHIP_CONFIG-}" ] && ascii=1
-        local le tr gle div
+        local cal clk up dith
         if (( ascii )); then
-          le='\'; tr='/'; gle='/'; div='/'
+          cal=''; clk='--'; up='^'; dith='>'
         else
-          le=$'\ue0be'; tr=$'\ue0bc'; gle=$'\ue0ba'; div=$'\ue0bb'
-        fi
-        if [ -n "${CMD_STATUS_FMT-}" ]; then
-          rccol=1; glyph="${CMD_STATUS_FMT}"
-        else
-          rccol=2; glyph=$'\u2713'; (( ascii )) && glyph='ok'
+          cal=$'\uf133'; clk=$'\uf017'; up=$'\uf062'; dith=$'\u2593\u2592\u2591'
         fi
         strftime -s stamp "%Y/%m/%d %H:%M:%S" "${EPOCHSECONDS}"
         if [ -n "${__cmd_cwd-}" ] && [ "${__cmd_cwd}" != "${PWD}" ]; then
           __path_compress "${__cmd_cwd}"; cwd="${REPLY}"
         fi
-        local RC="${e}[38;5;${rccol};49m" RCB="${e}[38;5;0;48;5;${rccol}m"
-        local G8D="${e}[38;5;8;49m" G8B="${e}[38;5;0;48;5;8m" D="${e}[0m"
-        local info="${RC}${le}${RCB} ${glyph} ${RC}${tr}"
-        local gray="${G8D}${gle}${G8B} ${stamp} ${div} ${CMD_DUR_FMT} ${G8D}${tr}"
-        local tail=''
-        [ -n "${cwd}" ] && tail="${G8D} ${cwd}"
-        export CMD_INFO="${info}${gray}${tail}${D}"
+        # exit code color: red for a single code, bright yellow for a pipefail chain
+        local scol=''
+        if [ -n "${CMD_STATUS_FMT-}" ]; then
+          scol=1; [[ "${CMD_STATUS_FMT}" == *"${__prompt_pipe}"* ]] && scol=11
+        fi
+        # gray icon block: calendar+timestamp then clock+duration (no separator
+        # between them), opening flush with a gray-background space, no cap
+        local out="${e}[48;5;8m ${e}[38;5;0;48;5;8m${cal} ${stamp} ${clk} ${CMD_DUR_FMT} "
+        # optional inverted code block (abrupt gray -> red/yellow); then the
+        # rightmost edge dithers from the last block's color to the background
+        local capcol=8
+        if [ -n "${scol}" ]; then
+          out+="${e}[38;5;0;48;5;${scol}m ${CMD_STATUS_FMT} "
+          capcol="${scol}"
+        fi
+        out+="${e}[38;5;${capcol};49m${dith}"
+        # origin cwd (only when the command changed dir), plain gray, preceded
+        # by an up-arrow noting the path is where everything above ran
+        [ -n "${cwd}" ] && out+="${e}[38;5;8;49m ${up} ${cwd}"
+        export CMD_INFO="${out}${e}[0m"
       }
       add-zsh-hook precmd build-footer-precmd
     fi
