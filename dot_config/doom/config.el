@@ -154,10 +154,12 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 
 ;; Register the docview: link type (Doom nils `org-modules', dropping ol-docview —
 ;; without it org mis-reads docview: links as fuzzy targets, hence the earlier
-;; "create as a new heading?" prompt), then route docview: links to Skim (FOSS/BSD),
-;; jumping to the ::page via AppleScript. doc-view/pdf-view render pages as images,
-;; which this setup can't display usefully, so we open externally in Skim — which
-;; honors the page (Preview couldn't). With no ::page we just open the PDF in Skim.
+;; "create as a new heading?" prompt), then follow docview: links inside Emacs:
+;; the PDF opens in the other window, pdf-view jumps to the ::page, and the note
+;; you followed from stays visible. Pages render as images but the text layer
+;; stays live (isearch, selection, copy). The earlier Skim/AppleScript routing
+;; dated from terminal-only use, where pages could not render at all; GUI Emacs
+;; with a built epdfinfo replaced it (2026-07-21).
 (after! org
   (require 'ol-docview)
   (org-link-set-parameters
@@ -166,13 +168,12 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
    (lambda (link _)
      (when (string-match "\\`\\(.*?\\)\\(?:::\\([0-9]+\\)\\)?\\'" link)
        (let ((path (expand-file-name (match-string 1 link)))
-             (page (match-string 2 link)))
-         (if page
-             (call-process
-              "osascript" nil 0 nil
-              "-e" "on run {p, n}\ntell application \"Skim\"\nactivate\nopen POSIX file p\ntell front document to go to page (n as integer)\nend tell\nend run"
-              path page)
-           (call-process "open" nil 0 nil "-a" "Skim" path)))))))
+             (page (and (match-string 2 link)
+                        (string-to-number (match-string 2 link)))))
+         (find-file-other-window path)
+         (when page
+           (cond ((derived-mode-p 'pdf-view-mode) (pdf-view-goto-page page))
+                 ((derived-mode-p 'doc-view-mode) (doc-view-goto-page page)))))))))
 
 ;; macOS GUI: make the left Option key Meta, so M- bindings (like M-e) work in the
 ;; GUI the way they do in the terminal — where Meta arrives as ESC. Keep the right
