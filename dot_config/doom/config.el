@@ -587,3 +587,22 @@ close this workspace; else leave the window. Aborts if killing is declined."
 ;; --- Grammar: langtool via the Homebrew CLI, not a jar path ------------------
 (after! langtool
   (setq langtool-bin "/opt/homebrew/bin/languagetool"))
+
+;; --- Treemacs: auto-open the sidebar in GUI frames ---------------------------
+;; Treemacs is toggle-based and never appears on its own; this shows it in every
+;; graphical frame without stealing focus. Per-frame like the theme above,
+;; because the daemon evaluates this file with no display attached.
+(defun +my/treemacs-for-frame (&optional frame)
+  "Open the treemacs sidebar in graphical FRAME without stealing focus."
+  (let ((f (or frame (selected-frame))))
+    (when (display-graphic-p f)
+      (run-with-idle-timer
+       0.2 nil
+       (lambda ()
+         (when (frame-live-p f)
+           (with-selected-frame f
+             (save-selected-window
+               (treemacs-select-window)))))))))
+(add-hook 'after-make-frame-functions #'+my/treemacs-for-frame)
+(add-hook 'server-after-make-frame-hook #'+my/treemacs-for-frame)
+(unless (daemonp) (add-hook 'window-setup-hook #'+my/treemacs-for-frame))
