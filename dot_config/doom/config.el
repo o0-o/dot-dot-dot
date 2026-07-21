@@ -78,6 +78,13 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 (setq org-roam-directory "~/Roam/")
 (setq org-roam-db-location "~/Roam/org-roam.db")
 
+;; Sidecars are named <artifact>.org, so a name like "page.html.org" matches
+;; Emacs's composite-suffix html pattern ("\\.[sx]?html?\\(\\.[a-zA-Z_]+\\)?\\'"
+;; -> mhtml-mode) before the org rule. Force-prepend an org entry so the final
+;; .org extension always wins. `push', not `add-to-list': the same pair already
+;; exists further down the alist, so add-to-list would (and did) no-op.
+(push '("\\.org\\'" . org-mode) auto-mode-alist)
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
