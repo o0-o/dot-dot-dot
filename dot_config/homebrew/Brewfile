@@ -1,28 +1,43 @@
-# Minimal terminal-environment dependencies — only what the managed dotfiles
-# actually invoke. Deliberately NOT a machine manifest: per-machine software
-# is installed and tracked outside chezmoi.
+# Dependencies of the managed dotfiles — the terminal environment plus the
+# Doom Emacs / org-roam KB stack (core to the knowledge base and progressive
+# disclosure system). Deliberately NOT a machine manifest: per-machine
+# software is installed and tracked outside chezmoi.
 #
-# NOTE: starship is intentionally absent — it installs to ~/.local/bin via its
-# own installer, not Homebrew.
+# NOTE: starship is intentionally absent — chezmoi installs it to ~/.local/bin
+# as an external. Doom Emacs itself is a git clone (~/.config/emacs +
+# 'doom install'), not a brew package; only its binary deps are listed here.
 
+tap "d12frosted/emacs-plus"
+# Spell checker — Doom :checkers (spell +aspell)
+brew "aspell"
 # Manage your dotfiles across multiple diverse machines, securely
 brew "chezmoi"
 # Load/unload environment variables based on $PWD
 brew "direnv"
+# Simple, fast and user-friendly alternative to find — Doom file indexing
+brew "fd"
 # Git extension for versioning large files — the managed git config sets
 # filter "lfs" required = true, so git hard-fails on LFS repos without it
 brew "git-lfs"
 # GNU Privacy Guard (OpenPGP) — chezmoi encryption; gpg-agent.conf is managed
 brew "gnupg"
+# Style and grammar checker — Doom :checkers grammar
+brew "languagetool"
 # Ambitious Vim-fork focused on extensibility and agility ($EDITOR)
 brew "neovim"
 # Pinentry for GPG on Mac — hard-pathed in the managed gpg-agent.conf
 brew "pinentry-mac"
+# Search tool like grep — Doom's search backbone (hard requirement)
+brew "ripgrep"
 # Terminal multiplexer
 brew "tmux"
 # Extremely fast Python package installer and resolver, written in Rust
 brew "uv"
+# GNU Emacs text editor — Doom Emacs host, core KB interface
+brew "d12frosted/emacs-plus/emacs-plus@30", trusted: true
 # MesloLGSDZ Nerd Font — kitty's configured font_family
 cask "font-meslo-lg-nerd-font"
 # GPU-based terminal emulator
 cask "kitty"
+# PDF reader — citation links AppleScript Skim to jump to the ::page anchor
+cask "skim"
