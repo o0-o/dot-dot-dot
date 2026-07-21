@@ -23,3 +23,12 @@
     path = "starship"
     executable = true
     refreshPeriod = "168h"
+
+# Bootstrap only — no refreshPeriod on purpose: 'doom upgrade' owns updates
+# (a bare git pull would desync straight.el packages and bytecode).
+# stable-presplit matches the branch the Doom config was written against.
+[".config/emacs"]
+    type = "git-repo"
+    url = "https://github.com/doomemacs/doomemacs.git"
+    clone.args = ["--depth", "1", "--branch", "stable-presplit"]
+    pull.args = ["--ff-only"]
