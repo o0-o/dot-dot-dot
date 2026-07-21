@@ -535,6 +535,23 @@ close this workspace; else leave the window. Aborts if killing is declined."
 (map! :nvime "s-w" #'+my/kill-buffer-and-close-pane)
 (global-set-key (kbd "s-w") #'+my/kill-buffer-and-close-pane)
 
+;; --- project sidebar (Treemacs) -----------------------------------------------
+;; Not to be confused with the Dired that the tmux-style splits/tabs above open
+;; in the new pane (tmux's "new shell in cwd" analog -- workspace-blind by
+;; design). The workspace-aware directory browser is Treemacs: `SPC o p'
+;; toggles a LEFT side window whose project list is scoped to the current Doom
+;; workspace (treemacs-persp, 'Perspectives scope). Project-follow keeps the
+;; tree pointed at the project of the buffer you're in; Doom leaves the more
+;; jarring cursor-level `treemacs-follow-mode' off, and we agree.
+(after! treemacs
+  (treemacs-project-follow-mode +1))
+
+;; Start the Emacs server so `emacsclient' (and agent tooling) can reach and
+;; inspect the running session.
+(require 'server)
+(unless (server-running-p)
+  (server-start))
+
 ;; Keep internal/autosave files out of the recent-files list (dashboard,
 ;; consult-buffer). The offender is Doom's persp session autosave under
 ;; `doom-local-dir' (Doom's own recentf-exclude doesn't cover its local dir);
