@@ -580,9 +580,15 @@ close this workspace; else leave the window. Aborts if killing is declined."
 (after! treemacs
   (treemacs-follow-mode 1)
   (treemacs-project-follow-mode 1)
-  (setq treemacs-width 32)
+  (setq treemacs-width 32
+        treemacs-width-is-initially-locked nil) ; allow mouse-drag resizing
   (define-key treemacs-mode-map [mouse-1]
               #'treemacs-single-click-expand-action))
+
+;; A grabbable divider between windows, so the sidebar resizes by mouse drag.
+;; Doom's default right divider is 1 px — nearly impossible to hit; drags land
+;; on the fringe instead (<left-fringe> <drag-mouse-1> is undefined).
+(setq window-divider-default-right-width 5)
 
 ;; --- Grammar: langtool via the Homebrew CLI, not a jar path ------------------
 (after! langtool
