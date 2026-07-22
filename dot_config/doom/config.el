@@ -189,7 +189,13 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 ;; Complete any word at point into an [[id:][Title]] node link (the Obsidian-[[ feel).
 ;; Trigger with your completion key (TAB / corfu popup) on a word.
 (after! org-roam
-  (setq org-roam-completion-everywhere t))
+  (setq org-roam-completion-everywhere t)
+  ;; [[roam:Title]] placeholder links (see the Linking policy) upgrade to id:
+  ;; links on save once a node with that title exists; unresolved ones persist
+  ;; harmlessly until then.
+  (add-hook 'org-roam-find-file-hook
+            (lambda ()
+              (add-hook 'before-save-hook #'org-roam-link-replace-all nil t))))
 
 ;; SPC m l c — paste a clipboard URL as a [[url][Page Title]] link (fetches the title).
 (map! :after org :map org-mode-map
