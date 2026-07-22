@@ -139,6 +139,20 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 (advice-add 'find-file :around #'+my/find-file-route-external)
 (advice-add 'find-file-other-window :around #'+my/find-file-route-external)
 
+;; --- POSIX config files Emacs doesn't map out of the box ---------------------
+;; Stock coverage is decent (*.conf -> conf-mode-maybe, fstab/hosts/.ini all
+;; mapped); these fill the gaps that actually occur on our systems. String
+;; matching works over TRAMP too, where the MIME sniff deliberately doesn't.
+(dolist (entry '(("/sshd?_config\\'" . conf-space-mode)           ; OpenSSH client + daemon
+                 ("/hostname\\.[a-z]+[0-9]+\\'" . conf-space-mode) ; OpenBSD hostname.<if>
+                 ("\\.cnf\\'" . conf-mode)                         ; MySQL-style conf
+                 ("\\.\\(?:service\\|socket\\|timer\\|mount\\|target\\|slice\\)\\'"
+                  . conf-unix-mode)))                              ; systemd units
+  (push entry auto-mode-alist))
+
+;; Any remaining undetermined file opens as text, not fundamental-mode.
+(setq-default major-mode 'text-mode)
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
