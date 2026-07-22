@@ -85,6 +85,33 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 ;; exists further down the alist, so add-to-list would (and did) no-op.
 (push '("\\.org\\'" . org-mode) auto-mode-alist)
 
+;; --- External handoff for file types Emacs can't usefully open ---------------
+;; Visiting these only trips the large-file prompt and then dumps binary, so
+;; route them out at the find-file choke point (treemacs, dired, and SPC f f
+;; all funnel through it). Media plays in the default app; archives and disk
+;; images reveal in Finder — NOT `open', which would silently extract a zip.
+;; Deliberately in Emacs still: images (image-mode), PDFs (pdf-view), tarballs
+;; (tar-mode browses them), and compressed text (jka-compr).
+(defconst +my/external-play-re
+  "\\.\\(mkv\\|mp4\\|m4v\\|mov\\|avi\\|webm\\|mp3\\|m4a\\|aac\\|flac\\|wav\\|ogg\\|opus\\|aiff\\)\\'"
+  "File extensions handed to the system default app.")
+(defconst +my/external-reveal-re
+  "\\.\\(zip\\|7z\\|rar\\|dmg\\|iso\\|pkg\\)\\'"
+  "File extensions revealed in Finder instead of visited.")
+(defun +my/find-file-route-external (orig filename &rest args)
+  "Route media and archives out of Emacs; visit everything else via ORIG."
+  (let ((f (expand-file-name filename)))
+    (cond
+     ((string-match-p +my/external-play-re (downcase f))
+      (call-process "open" nil 0 nil f)
+      (message "Opened externally: %s" (file-name-nondirectory f)))
+     ((string-match-p +my/external-reveal-re (downcase f))
+      (call-process "open" nil 0 nil "-R" f)
+      (message "Revealed in Finder: %s" (file-name-nondirectory f)))
+     (t (apply orig filename args)))))
+(advice-add 'find-file :around #'+my/find-file-route-external)
+(advice-add 'find-file-other-window :around #'+my/find-file-route-external)
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
