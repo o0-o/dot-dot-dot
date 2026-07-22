@@ -98,17 +98,44 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 (defconst +my/external-reveal-re
   "\\.\\(zip\\|7z\\|rar\\|dmg\\|iso\\|pkg\\)\\'"
   "File extensions revealed in Finder instead of visited.")
+;; Content awareness: when the NAME says nothing (no match above, no
+;; auto-mode-alist entry either), ask file(1) for the MIME type and route on
+;; the substance. The sniff runs only on that unknown remainder, so ordinary
+;; opens never pay the subprocess.
+(defconst +my/mime-reveal-set
+  '("application/zip" "application/x-7z-compressed" "application/vnd.rar"
+    "application/x-rar" "application/x-iso9660-image"
+    "application/x-apple-diskimage" "application/x-xar")
+  "MIME types revealed in Finder when found by content sniffing.")
+
+(defun +my/file-mime-type (f)
+  "MIME type of local regular file F per file(1), or nil."
+  (when (and (file-regular-p f) (not (file-remote-p f)))
+    (with-temp-buffer
+      (when (eq 0 (call-process "file" nil t nil "--brief" "--mime-type" "--" f))
+        (string-trim (buffer-string))))))
+
+(defun +my/external-route-for (f)
+  "Decide how to handle F: `play', `reveal', or nil to visit normally."
+  (let ((name (downcase f)))
+    (cond
+     ((string-match-p +my/external-play-re name) 'play)
+     ((string-match-p +my/external-reveal-re name) 'reveal)
+     ;; Name gave no answer and Emacs has no mode for it: sniff the content.
+     ((not (assoc-default f auto-mode-alist #'string-match))
+      (when-let ((mime (+my/file-mime-type f)))
+        (cond ((string-match-p "\\`\\(video\\|audio\\)/" mime) 'play)
+              ((member mime +my/mime-reveal-set) 'reveal)))))))
+
 (defun +my/find-file-route-external (orig filename &rest args)
   "Route media and archives out of Emacs; visit everything else via ORIG."
   (let ((f (expand-file-name filename)))
-    (cond
-     ((string-match-p +my/external-play-re (downcase f))
-      (call-process "open" nil 0 nil f)
-      (message "Opened externally: %s" (file-name-nondirectory f)))
-     ((string-match-p +my/external-reveal-re (downcase f))
-      (call-process "open" nil 0 nil "-R" f)
-      (message "Revealed in Finder: %s" (file-name-nondirectory f)))
-     (t (apply orig filename args)))))
+    (pcase (+my/external-route-for f)
+      ('play (call-process "open" nil 0 nil f)
+             (message "Opened externally: %s" (file-name-nondirectory f)))
+      ('reveal (call-process "open" nil 0 nil "-R" f)
+               (message "Revealed in Finder: %s" (file-name-nondirectory f)))
+      (_ (apply orig filename args)))))
 (advice-add 'find-file :around #'+my/find-file-route-external)
 (advice-add 'find-file-other-window :around #'+my/find-file-route-external)
 
