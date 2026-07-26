@@ -274,10 +274,6 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 ;; Indent YAML with spaces by hand; avoid TAB inside the block (it's org-cycle).
 (after! org
   (setq org-adapt-indentation nil)
-  ;; Shrink columns carrying a <N> width cookie when a file opens, so the
-  ;; backlinks table renders collapsed without a manual refresh; C-c TAB on a
-  ;; column expands it. Cookie-free tables are untouched.
-  (setq org-startup-shrink-all-tables t)
   (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1))))
 
 ;; --- Dynamic block: the policies that extend this procedure ------------------
@@ -362,23 +358,38 @@ shared heading (e.g. .../Compliance) collapse into one tallied bucket."
     (insert (format "- By type :: %s\n" (tally 3 nil)))
     (insert (format "- By context :: %s" (tally 4 t)))))
 
+(defun +my/trunc (s n)
+  "Truncate S to N display columns, marking overflow with an ellipsis."
+  (if (and s (> (string-width s) n))
+      (concat (truncate-string-to-width s (max 1 (1- n))) "…")
+    (or s "")))
+
 (defun +my/backlinks-table (rows limit)
-  "Insert ROWS as a table. Wide columns carry width cookies and are shrunk on
-generation, so C-c TAB on a column expands it; the raw text keeps full content.
-LIMIT caps the rows shown."
+  "Insert ROWS as a table sized to the current window. Category and Type keep
+their natural width; Link, Context and Description share the rest and truncate
+to fit, so the table never wraps. Truncation is display only in effect --- the
+full text lives on the linking node and in the query. LIMIT caps the rows."
   (let* ((total (length rows))
-         (shown (if (and limit (> total limit)) (seq-take rows limit) rows)))
-    (insert "| Link | Category | Type | Context | Description |\n")
-    (insert "| <22> |  |  | <24> | <30> |\n")
-    (insert "|-+-+-+-+-|\n")
+         (shown (if (and limit (> total limit)) (seq-take rows limit) rows))
+         (win (let ((w (get-buffer-window (current-buffer) t)))
+                (if w (window-body-width w) (or fill-column 100))))
+         (catw (apply #'max 8 (mapcar (lambda (r) (string-width (nth 2 r))) shown)))
+         (typw (apply #'max 4 (mapcar (lambda (r) (string-width (nth 3 r))) shown)))
+         ;; borders and padding for five columns cost ~16 cols
+         (avail (max 36 (- win catw typw 16)))
+         (linkw (max 12 (floor (* avail 0.30))))
+         (ctxw  (max 12 (floor (* avail 0.30))))
+         (descw (max 12 (- avail linkw ctxw))))
+    (insert "| Link | Category | Type | Context | Description |\n|-+-+-+-+-|\n")
     (dolist (r shown)
       (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s |\n"
-                      (nth 0 r) (nth 1 r) (nth 2 r) (nth 3 r) (nth 4 r) (nth 5 r))))
+                      (nth 0 r) (+my/trunc (nth 1 r) linkw) (nth 2 r) (nth 3 r)
+                      (+my/trunc (nth 4 r) ctxw) (+my/trunc (nth 5 r) descw))))
     (let ((table-end (point)))
       (when (and limit (> total limit))
         (insert (format "/Showing %d of %d; raise =:limit= or use =:summary t=./\n" limit total)))
       (save-excursion (goto-char table-end) (forward-line -1)
-                      (ignore-errors (org-table-align) (org-table-shrink))))))
+                      (ignore-errors (org-table-align))))))
 
 (defun org-dblock-write:backlinks (params)
   "Table of the nodes that link this node: category, type, context, description.
