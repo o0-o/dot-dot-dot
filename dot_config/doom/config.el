@@ -312,6 +312,98 @@ Use as a dynamic block:  #+BEGIN: policies / #+END:  then refresh with C-c C-c."
      (org-create-dblock '(:name "policies"))
      (org-update-dblock))))
 
+;; --- Dynamic block: backlinks — everything that links this node --------------
+;; A typed, materialized backlinks view. Each row is a node that links here:
+;;   | Link | Category | Type | Context | Description |
+;; Category/Type come from the linking node's classification. Context is WHERE
+;; the link sits in that node: its outline breadcrumb when it is under a heading
+;; (free — org-roam stores :outline per link); when the outline is empty (a
+;; property or a heading-less body link) we open the source at the link position
+;; to name the property, or fall back to the node's title. The expensive path
+;; runs ONLY on the outline-nil minority. See the "Backlinks" policy.
+(defun +my/backlink-context (outline file pos title)
+  "Return (RANK . LABEL) for a backlink: RANK 2 = heading OUTLINE breadcrumb,
+1 = the property key at POS, 0 = TITLE fallback. Only visits FILE when OUTLINE
+is nil, so the expensive path runs on the minority of links."
+  (cond
+   (outline (cons 2 (mapconcat #'identity outline "/")))
+   ((and file (file-exists-p file))
+    (or (ignore-errors
+          (with-current-buffer (find-file-noselect file t)
+            (save-excursion
+              (goto-char pos)
+              (let ((el (org-element-at-point)))
+                (when (eq (org-element-type el) 'node-property)
+                  (cons 1 (org-element-property :key el)))))))
+        (cons 0 title)))
+   (t (cons 0 title))))
+
+(defun +my/trunc (s n)
+  "Truncate S to N display columns with a trailing ellipsis."
+  (if (and s (> (string-width s) n)) (concat (truncate-string-to-width s (1- n)) "…") (or s "")))
+
+(defun org-dblock-write:backlinks (params)
+  "Table of the nodes that link this node: category, type, context, description.
+Use as a dynamic block:  #+BEGIN: backlinks [:limit N] / #+END:  refresh with C-c C-c.
+:limit caps the rows shown; Context and Description are truncated to keep the table narrow."
+  (let ((self (ignore-errors (org-roam-node-id (org-roam-node-at-point))))
+        (seen (make-hash-table :test 'equal))
+        (maxrank (make-hash-table :test 'equal))
+        rows)
+    (when self
+      (dolist (l (org-roam-db-query
+                  [:select [source pos properties] :from links
+                   :where (and (= dest $s1) (= type "id"))] self))
+        (pcase-let ((`(,src ,pos ,lprops) l))
+          (unless (equal src self)
+            (pcase-let ((`(,title ,file ,nprops)
+                         (car (org-roam-db-query
+                               [:select [title file properties] :from nodes :where (= id $s1)] src))))
+              (pcase-let ((`(,rank . ,ctx)
+                           (+my/backlink-context (plist-get lprops :outline) file pos title)))
+                (puthash src (max rank (gethash src maxrank 0)) maxrank)
+                (let ((key (cons src ctx)))
+                  (unless (gethash key seen)
+                    (puthash key t seen)
+                    (let* ((cat (cdr (assoc "CATEGORY" nprops)))
+                           ;; org's built-in CATEGORY defaults to the filename; treat
+                           ;; that as "unclassified" and show blank.
+                           (cat (if (and cat file (equal cat (file-name-base file))) "" (or cat ""))))
+                      (push (list src title cat
+                                  (or (cdr (assoc "TYPE" nprops)) "")
+                                  ctx
+                                  (or (cdr (assoc "DESCRIPTION" nprops)) "")
+                                  rank)
+                            rows)))))))))
+      ;; A source that links under a real heading (rank>0) suppresses its own
+      ;; incidental title-context (rank 0) prose mentions.
+      (setq rows (cl-remove-if (lambda (r) (and (= (nth 6 r) 0)
+                                                (> (gethash (nth 0 r) maxrank 0) 0)))
+                               rows))
+      (if (null rows)
+          (insert "No backlinks.")
+        (let* ((limit (plist-get params :limit))
+               (sorted (sort rows (lambda (a b) (string< (nth 4 a) (nth 4 b)))))
+               (total (length sorted))
+               (shown (if (and limit (> total limit)) (seq-take sorted limit) sorted)))
+          (insert "| Link | Category | Type | Context | Description |\n|-+-+-+-+-|\n")
+          (dolist (r shown)
+            (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s |\n"
+                            (nth 0 r) (nth 1 r) (nth 2 r) (nth 3 r)
+                            (+my/trunc (nth 4 r) 45) (+my/trunc (nth 5 r) 60))))
+          (let ((table-end (point)))
+            (when (and limit (> total limit))
+              (insert (format "/Showing %d of %d; raise =:limit= to see more./\n" limit total)))
+            (save-excursion (goto-char table-end) (forward-line -1)
+                            (ignore-errors (org-table-align)))))))))
+
+(after! org
+  (org-dynamic-block-define
+   "backlinks"
+   (lambda ()
+     (org-create-dblock '(:name "backlinks"))
+     (org-update-dblock))))
+
 ;; Display-width table alignment so org tables with links read straight (GUI)
 (add-hook 'org-mode-hook #'valign-mode)
 (setq valign-fancy-bar t)
