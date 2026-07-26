@@ -369,34 +369,49 @@ shared heading (e.g. .../Compliance) collapse into one tallied bucket."
 The refit hook binds it to a specific window's width, so a regenerate driven by
 a size-change event sizes to that window rather than whichever one is selected.")
 
-(defvar +my/backlinks-max-width 79
-  "Maximum width of the backlinks table, in columns (the PEP 8 line length).
-The table caps here and only narrows below it to fit a smaller window --- it
-never fills a wider one. Saves also pin the committed form to this width, so the
-file stays stable across windows and machines.")
+(defvar +my/backlinks-commit-width 79
+  "Width the backlinks table is written to on save (the PEP 8 line length), so
+its committed form stays stable across windows and machines. The display fills
+the real window on open and resize; only the on-disk form is pinned to this.")
 
 (defun +my/backlinks-table (rows limit)
-  "Insert ROWS as a table sized to the current window. Category and Type keep
-their natural width; Link, Context and Description share the rest and truncate
-to fit, so the table never wraps. Truncation is display only in effect --- the
-full text lives on the linking node and in the query. LIMIT caps the rows."
+  "Insert ROWS as a table sized between a floor and its natural width. The table
+grows with the window until every cell shows in full, then stops --- it never
+adds empty space past its content --- and below its natural width it shrinks all
+columns proportionally to fit. Truncation is a rendered effect only; the full
+text lives on the linking node and in the query. LIMIT caps the rows."
   (let* ((total (length rows))
          (shown (if (and limit (> total limit)) (seq-take rows limit) rows))
-         (win (min +my/backlinks-max-width
-                   (or +my/backlinks-force-width
-                       (let ((w (get-buffer-window (current-buffer) t)))
-                         (if w (window-body-width w) +my/backlinks-max-width)))))
-         (catw (apply #'max 8 (mapcar (lambda (r) (string-width (nth 2 r))) shown)))
-         (typw (apply #'max 4 (mapcar (lambda (r) (string-width (nth 3 r))) shown)))
-         ;; borders and padding for five columns cost ~16 cols
-         (avail (max 36 (- win catw typw 16)))
-         (linkw (max 12 (floor (* avail 0.30))))
-         (ctxw  (max 12 (floor (* avail 0.30))))
-         (descw (max 12 (- avail linkw ctxw))))
-    (insert "| Link | Category | Type | Context | Description |\n|-+-+-+-+-|\n")
+         (win (or +my/backlinks-force-width
+                  (let ((w (get-buffer-window (current-buffer) t)))
+                    (if w (window-body-width w) +my/backlinks-commit-width))))
+         ;; natural width of each column: the widest cell, but never below its header
+         (nat (lambda (i header)
+                (apply #'max (string-width header)
+                       (mapcar (lambda (r) (string-width (nth i r))) shown))))
+         (ln (funcall nat 1 "Link"))    (cn (funcall nat 2 "Category"))
+         (tn (funcall nat 3 "Type"))    (xn (funcall nat 4 "Context"))
+         (dn (funcall nat 5 "Description"))
+         (natsum (+ ln cn tn xn dn))
+         ;; grow to the window, but never past the natural width (all cells full)
+         (budget (- (min win (+ natsum 16)) 16))
+         ;; Category and Type stay at their natural width (they are short); the
+         ;; long columns absorb the shrink. floor() keeps the sum within budget.
+         (catw cn) (typw tn)
+         (flexnat (+ ln xn dn))
+         (flexbudget (max 18 (- budget catw typw)))
+         (scale (if (< flexbudget flexnat) (/ (float flexbudget) flexnat) 1.0))
+         (linkw (max 6 (floor (* ln scale))))
+         (ctxw  (max 6 (floor (* xn scale))))
+         (descw (max 6 (floor (* dn scale)))))
+    (insert (format "| %s | %s | %s | %s | %s |\n|-+-+-+-+-|\n"
+                    (+my/trunc "Link" linkw) (+my/trunc "Category" catw)
+                    (+my/trunc "Type" typw) (+my/trunc "Context" ctxw)
+                    (+my/trunc "Description" descw)))
     (dolist (r shown)
       (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s |\n"
-                      (nth 0 r) (+my/trunc (nth 1 r) linkw) (nth 2 r) (nth 3 r)
+                      (nth 0 r) (+my/trunc (nth 1 r) linkw)
+                      (+my/trunc (nth 2 r) catw) (+my/trunc (nth 3 r) typw)
                       (+my/trunc (nth 4 r) ctxw) (+my/trunc (nth 5 r) descw))))
     (let ((table-end (point)))
       (when (and limit (> total limit))
@@ -494,20 +509,26 @@ width has changed since the last fit."
                 (save-excursion (ignore-errors (org-update-all-dblocks)))
                 (unless mod (set-buffer-modified-p nil))))))))))
 
-(defun +my/backlinks-on-size-change (frame)
-  "Debounced refit of the backlinks tables shown in FRAME's windows."
-  (when (timerp +my/backlinks-refit-timer) (cancel-timer +my/backlinks-refit-timer))
-  (let ((wins (window-list frame 'no-mini)))
-    (setq +my/backlinks-refit-timer
-          (run-with-idle-timer
-           0.25 nil (lambda ()
-                      (dolist (win wins)
-                        (when (window-live-p win) (+my/backlinks-refit-window win))))))))
+(defun +my/backlinks-refit-visible ()
+  "Refit the backlinks tables in every visible window."
+  (dolist (frame (frame-list))
+    (when (frame-visible-p frame)
+      (dolist (win (window-list frame 'no-mini))
+        (when (window-live-p win) (+my/backlinks-refit-window win))))))
 
-(add-hook 'window-size-change-functions #'+my/backlinks-on-size-change)
+(defun +my/backlinks-schedule-refit (&rest _)
+  "Debounced trigger for `+my/backlinks-refit-visible'."
+  (when (timerp +my/backlinks-refit-timer) (cancel-timer +my/backlinks-refit-timer))
+  (setq +my/backlinks-refit-timer
+        (run-with-idle-timer 0.2 nil #'+my/backlinks-refit-visible)))
+
+;; Regenerate on any change that can alter a window's width or which buffer it
+;; shows: a resize, a split, opening a file, or switching buffers.
+(add-hook 'window-size-change-functions #'+my/backlinks-schedule-refit)
+(add-hook 'window-configuration-change-hook #'+my/backlinks-schedule-refit)
 
 (defun +my/backlinks-restore-display ()
-  "After a save (which pins the table to `+my/backlinks-max-width'), refit the
+  "After a save (which pins the table to `+my/backlinks-commit-width'), refit the
 table back to each showing window so the display stays responsive."
   (setq +my/backlinks-last-width nil)
   (dolist (win (get-buffer-window-list (current-buffer) nil 'visible))
@@ -595,7 +616,7 @@ Best-effort: a DB hiccup or missing org-roam can never block the save."
     (when (fboundp 'org-roam-db-query)
       ;; Pin the backlinks table to a stable width on disk; the display refits
       ;; to the real window afterward (see +my/backlinks-restore-display).
-      (let ((+my/backlinks-force-width +my/backlinks-max-width))
+      (let ((+my/backlinks-force-width +my/backlinks-commit-width))
         (ignore-errors (save-excursion (org-update-all-dblocks)))))))
 
 (defun +my/org-roam-insert-policies-block ()
