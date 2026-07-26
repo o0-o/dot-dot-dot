@@ -274,6 +274,10 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 ;; Indent YAML with spaces by hand; avoid TAB inside the block (it's org-cycle).
 (after! org
   (setq org-adapt-indentation nil)
+  ;; Shrink columns carrying a <N> width cookie when a file opens, so the
+  ;; backlinks table renders collapsed without a manual refresh; C-c TAB on a
+  ;; column expands it. Cookie-free tables are untouched.
+  (setq org-startup-shrink-all-tables t)
   (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1))))
 
 ;; --- Dynamic block: the policies that extend this procedure ------------------
@@ -338,14 +342,50 @@ is nil, so the expensive path runs on the minority of links."
         (cons 0 title)))
    (t (cons 0 title))))
 
-(defun +my/trunc (s n)
-  "Truncate S to N display columns with a trailing ellipsis."
-  (if (and s (> (string-width s) n)) (concat (truncate-string-to-width s (1- n)) "…") (or s "")))
+(defun +my/backlinks-summary (rows)
+  "Insert compact counts of ROWS by category, type, and context tail.
+The context tail is the last breadcrumb segment, so many links landing under a
+shared heading (e.g. .../Compliance) collapse into one tallied bucket."
+  (cl-flet ((tally (idx tail)
+              (let ((h (make-hash-table :test 'equal)) pairs)
+                (dolist (r rows)
+                  (let ((k (if tail (car (last (split-string (nth idx r) "/")))
+                             (nth idx r))))
+                    (when (and k (not (string-empty-p k)))
+                      (puthash k (1+ (gethash k h 0)) h))))
+                (maphash (lambda (k v) (push (cons k v) pairs)) h)
+                (if (null pairs) "--"
+                  (mapconcat (lambda (p) (format "%s %d" (car p) (cdr p)))
+                             (sort pairs (lambda (a b) (> (cdr a) (cdr b)))) " · ")))))
+    (insert (format "%d backlink%s.\n" (length rows) (if (= 1 (length rows)) "" "s")))
+    (insert (format "- By category :: %s\n" (tally 2 nil)))
+    (insert (format "- By type :: %s\n" (tally 3 nil)))
+    (insert (format "- By context :: %s" (tally 4 t)))))
+
+(defun +my/backlinks-table (rows limit)
+  "Insert ROWS as a table. Wide columns carry width cookies and are shrunk on
+generation, so C-c TAB on a column expands it; the raw text keeps full content.
+LIMIT caps the rows shown."
+  (let* ((total (length rows))
+         (shown (if (and limit (> total limit)) (seq-take rows limit) rows)))
+    (insert "| Link | Category | Type | Context | Description |\n")
+    (insert "| <22> |  |  | <24> | <30> |\n")
+    (insert "|-+-+-+-+-|\n")
+    (dolist (r shown)
+      (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s |\n"
+                      (nth 0 r) (nth 1 r) (nth 2 r) (nth 3 r) (nth 4 r) (nth 5 r))))
+    (let ((table-end (point)))
+      (when (and limit (> total limit))
+        (insert (format "/Showing %d of %d; raise =:limit= or use =:summary t=./\n" limit total)))
+      (save-excursion (goto-char table-end) (forward-line -1)
+                      (ignore-errors (org-table-align) (org-table-shrink))))))
 
 (defun org-dblock-write:backlinks (params)
   "Table of the nodes that link this node: category, type, context, description.
-Use as a dynamic block:  #+BEGIN: backlinks [:limit N] / #+END:  refresh with C-c C-c.
-:limit caps the rows shown; Context and Description are truncated to keep the table narrow."
+Use as a dynamic block:  #+BEGIN: backlinks [:category C] [:type T] [:limit N] [:summary t]
+:category and :type filter rows; :limit caps them; :summary renders counts by
+category, type, and context tail instead of rows. Wide columns are shrunk on
+generation, so C-c TAB on a column expands it. See the Backlinks policy."
   (let ((self (ignore-errors (org-roam-node-id (org-roam-node-at-point))))
         (seen (make-hash-table :test 'equal))
         (maxrank (make-hash-table :test 'equal))
@@ -380,22 +420,22 @@ Use as a dynamic block:  #+BEGIN: backlinks [:limit N] / #+END:  refresh with C-
       (setq rows (cl-remove-if (lambda (r) (and (= (nth 6 r) 0)
                                                 (> (gethash (nth 0 r) maxrank 0) 0)))
                                rows))
-      (if (null rows)
-          (insert "No backlinks.")
-        (let* ((limit (plist-get params :limit))
-               (sorted (sort rows (lambda (a b) (string< (nth 4 a) (nth 4 b)))))
-               (total (length sorted))
-               (shown (if (and limit (> total limit)) (seq-take sorted limit) sorted)))
-          (insert "| Link | Category | Type | Context | Description |\n|-+-+-+-+-|\n")
-          (dolist (r shown)
-            (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s |\n"
-                            (nth 0 r) (nth 1 r) (nth 2 r) (nth 3 r)
-                            (+my/trunc (nth 4 r) 45) (+my/trunc (nth 5 r) 60))))
-          (let ((table-end (point)))
-            (when (and limit (> total limit))
-              (insert (format "/Showing %d of %d; raise =:limit= to see more./\n" limit total)))
-            (save-excursion (goto-char table-end) (forward-line -1)
-                            (ignore-errors (org-table-align)))))))))
+      ;; :category / :type filters -- restrict to a task-relevant slice. Values
+      ;; read as symbols (or strings, when quoted for a multi-word value like
+      ;; "Web Page"); coerce to a string before comparing.
+      (let ((fcat (plist-get params :category))
+            (ftype (plist-get params :type)))
+        (when fcat
+          (setq fcat (format "%s" fcat))
+          (setq rows (cl-remove-if-not (lambda (r) (equal (nth 2 r) fcat)) rows)))
+        (when ftype
+          (setq ftype (format "%s" ftype))
+          (setq rows (cl-remove-if-not (lambda (r) (equal (nth 3 r) ftype)) rows))))
+      (setq rows (sort rows (lambda (a b) (string< (nth 4 a) (nth 4 b)))))
+      (cond
+       ((null rows) (insert "No backlinks."))
+       ((plist-get params :summary) (+my/backlinks-summary rows))
+       (t (+my/backlinks-table rows (plist-get params :limit)))))))
 
 (after! org
   (org-dynamic-block-define
