@@ -74,9 +74,14 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Roam/")
-(setq org-roam-directory "~/Roam/")
-(setq org-roam-db-location "~/Roam/org-roam.db")
+(setq org-directory "~/Agent/")
+(setq org-roam-directory "~/Agent/")
+(setq org-roam-db-location "~/Agent/org-roam.db")
+
+;; Land in the knowledge base: new buffers and the dashboard default here, so
+;; C-x C-f and friends start in ~/Agent rather than wherever Emacs was launched.
+(setq default-directory (expand-file-name "~/Agent/"))
+(setq +doom-dashboard-pwd-policy (expand-file-name "~/Agent/"))
 
 ;; Sidecars are named <artifact>.org, so a name like "page.html.org" matches
 ;; Emacs's composite-suffix html pattern ("\\.[sx]?html?\\(\\.[a-zA-Z_]+\\)?\\'"
@@ -374,6 +379,18 @@ a size-change event sizes to that window rather than whichever one is selected."
 its committed form stays stable across windows and machines. The display fills
 the real window on open and resize; only the on-disk form is pinned to this.")
 
+(defun +my/backlinks-window-width (win)
+  "Columns available for the table in WIN. `window-body-width' does not subtract
+the line-number gutter, so do that here, plus a column of slack so the table
+never reaches the right edge."
+  (max 20 (- (window-body-width win)
+             (or (ignore-errors
+                   (with-selected-window win
+                     (when (bound-and-true-p display-line-numbers)
+                       (line-number-display-width 'columns))))
+                 0)
+             1)))
+
 (defun +my/backlinks-table (rows limit)
   "Insert ROWS as a table sized between a floor and its natural width. The table
 grows with the window until every cell shows in full, then stops --- it never
@@ -384,7 +401,7 @@ text lives on the linking node and in the query. LIMIT caps the rows."
          (shown (if (and limit (> total limit)) (seq-take rows limit) rows))
          (win (or +my/backlinks-force-width
                   (let ((w (get-buffer-window (current-buffer) t)))
-                    (if w (window-body-width w) +my/backlinks-commit-width))))
+                    (if w (+my/backlinks-window-width w) +my/backlinks-commit-width))))
          ;; natural width of each column: the widest cell, but never below its header
          (nat (lambda (i header)
                 (apply #'max (string-width header)
@@ -498,7 +515,7 @@ width has changed since the last fit."
     (when (and (window-live-p win) (buffer-live-p buf))
       (with-current-buffer buf
         (when (derived-mode-p 'org-mode)
-          (let ((w (window-body-width win)))
+          (let ((w (+my/backlinks-window-width win)))
             (when (and w (not (equal w +my/backlinks-last-width))
                        (save-excursion
                          (goto-char (point-min))
