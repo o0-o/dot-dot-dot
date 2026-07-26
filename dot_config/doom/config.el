@@ -364,6 +364,16 @@ shared heading (e.g. .../Compliance) collapse into one tallied bucket."
       (concat (truncate-string-to-width s (max 1 (1- n))) "…")
     (or s "")))
 
+(defvar +my/backlinks-force-width nil
+  "When non-nil, the width +my/backlinks-table sizes to, overriding the window.
+The refit hook binds it to a specific window's width, so a regenerate driven by
+a size-change event sizes to that window rather than whichever one is selected.")
+
+(defvar +my/backlinks-commit-width 100
+  "Width the backlinks table is written to on save, so its committed form stays
+stable across windows and machines. The display refits to the real window on
+open and on resize; only the on-disk form is pinned to this.")
+
 (defun +my/backlinks-table (rows limit)
   "Insert ROWS as a table sized to the current window. Category and Type keep
 their natural width; Link, Context and Description share the rest and truncate
@@ -371,8 +381,9 @@ to fit, so the table never wraps. Truncation is display only in effect --- the
 full text lives on the linking node and in the query. LIMIT caps the rows."
   (let* ((total (length rows))
          (shown (if (and limit (> total limit)) (seq-take rows limit) rows))
-         (win (let ((w (get-buffer-window (current-buffer) t)))
-                (if w (window-body-width w) (or fill-column 100))))
+         (win (or +my/backlinks-force-width
+                  (let ((w (get-buffer-window (current-buffer) t)))
+                    (if w (window-body-width w) (or fill-column 100)))))
          (catw (apply #'max 8 (mapcar (lambda (r) (string-width (nth 2 r))) shown)))
          (typw (apply #'max 4 (mapcar (lambda (r) (string-width (nth 3 r))) shown)))
          ;; borders and padding for five columns cost ~16 cols
@@ -395,8 +406,8 @@ full text lives on the linking node and in the query. LIMIT caps the rows."
   "Table of the nodes that link this node: category, type, context, description.
 Use as a dynamic block:  #+BEGIN: backlinks [:category C] [:type T] [:limit N] [:summary t]
 :category and :type filter rows; :limit caps them; :summary renders counts by
-category, type, and context tail instead of rows. Wide columns are shrunk on
-generation, so C-c TAB on a column expands it. See the Backlinks policy."
+category, type, and context tail instead of rows. The row table sizes its
+flexible columns to the window and truncates to fit. See the Backlinks policy."
   (let ((self (ignore-errors (org-roam-node-id (org-roam-node-at-point))))
         (seen (make-hash-table :test 'equal))
         (maxrank (make-hash-table :test 'equal))
@@ -454,6 +465,51 @@ generation, so C-c TAB on a column expands it. See the Backlinks policy."
    (lambda ()
      (org-create-dblock '(:name "backlinks"))
      (org-update-dblock))))
+
+;; --- Keep the backlinks table sized to its window ----------------------------
+;; The table is rendered to the window width, so it must regenerate when the
+;; window resizes or a file first shows it. Debounced; a refit never marks a
+;; clean buffer modified -- the fit is a display concern, reaching disk only
+;; when a real edit is saved.
+(defvar +my/backlinks-refit-timer nil)
+(defvar-local +my/backlinks-last-width nil)
+
+(defun +my/backlinks-refit-window (win)
+  "Regenerate the backlinks blocks in WIN's buffer, sized to WIN, when WIN's
+width has changed since the last fit."
+  (let ((buf (window-buffer win)))
+    (when (and (window-live-p win) (buffer-live-p buf))
+      (with-current-buffer buf
+        (when (derived-mode-p 'org-mode)
+          (let ((w (window-body-width win)))
+            (when (and w (not (equal w +my/backlinks-last-width))
+                       (save-excursion
+                         (goto-char (point-min))
+                         (re-search-forward "^#\\+BEGIN: backlinks" nil t)))
+              (setq +my/backlinks-last-width w)
+              (let ((mod (buffer-modified-p))
+                    (+my/backlinks-force-width w))
+                (save-excursion (ignore-errors (org-update-all-dblocks)))
+                (unless mod (set-buffer-modified-p nil))))))))))
+
+(defun +my/backlinks-on-size-change (frame)
+  "Debounced refit of the backlinks tables shown in FRAME's windows."
+  (when (timerp +my/backlinks-refit-timer) (cancel-timer +my/backlinks-refit-timer))
+  (let ((wins (window-list frame 'no-mini)))
+    (setq +my/backlinks-refit-timer
+          (run-with-idle-timer
+           0.25 nil (lambda ()
+                      (dolist (win wins)
+                        (when (window-live-p win) (+my/backlinks-refit-window win))))))))
+
+(add-hook 'window-size-change-functions #'+my/backlinks-on-size-change)
+
+(defun +my/backlinks-restore-display ()
+  "After a save (which pins the table to `+my/backlinks-commit-width'), refit the
+table back to each showing window so the display stays responsive."
+  (setq +my/backlinks-last-width nil)
+  (dolist (win (get-buffer-window-list (current-buffer) nil 'visible))
+    (+my/backlinks-refit-window win)))
 
 ;; Display-width table alignment so org tables with links read straight (GUI)
 (add-hook 'org-mode-hook #'valign-mode)
@@ -535,7 +591,10 @@ Best-effort: a DB hiccup or missing org-roam can never block the save."
     (when +my/org-roam-auto-insert-policies
       (ignore-errors (+my/org-roam--ensure-policies-block)))
     (when (fboundp 'org-roam-db-query)
-      (ignore-errors (save-excursion (org-update-all-dblocks))))))
+      ;; Pin the backlinks table to a stable width on disk; the display refits
+      ;; to the real window afterward (see +my/backlinks-restore-display).
+      (let ((+my/backlinks-force-width +my/backlinks-commit-width))
+        (ignore-errors (save-excursion (org-update-all-dblocks)))))))
 
 (defun +my/org-roam-insert-policies-block ()
   "Insert the :POLICIES: block into this note if absent, then refresh it.
@@ -547,7 +606,8 @@ Use to retrofit an existing note."
 
 (add-hook 'org-mode-hook
           (lambda ()
-            (add-hook 'before-save-hook #'+my/org-roam-policies-maintain nil t)))
+            (add-hook 'before-save-hook #'+my/org-roam-policies-maintain nil t)
+            (add-hook 'after-save-hook #'+my/backlinks-restore-display nil t)))
 
 ;; org-roam prepends the :PROPERTIES:/:ID: drawer, so the head below lands
 ;; right after it. No :POLICIES: slot here --- the save hook adds it once a
