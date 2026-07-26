@@ -504,10 +504,12 @@ width has changed since the last fit."
                          (goto-char (point-min))
                          (re-search-forward "^#\\+BEGIN: backlinks" nil t)))
               (setq +my/backlinks-last-width w)
-              (let ((mod (buffer-modified-p))
-                    (+my/backlinks-force-width w))
-                (save-excursion (ignore-errors (org-update-all-dblocks)))
-                (unless mod (set-buffer-modified-p nil))))))))))
+              (let ((+my/backlinks-force-width w))
+                ;; A refit is display only: keep it out of the undo history and
+                ;; never let it touch the modified flag. with-silent-modifications
+                ;; preserves whatever modified state the buffer already had.
+                (with-silent-modifications
+                  (save-excursion (ignore-errors (org-update-all-dblocks))))))))))))
 
 (defun +my/backlinks-refit-visible ()
   "Refit the backlinks tables in every visible window."
