@@ -329,9 +329,13 @@ Use as a dynamic block:  #+BEGIN: policies / #+END:  then refresh with C-c C-c."
 (defun +my/backlink-context (outline file pos title)
   "Return (RANK . LABEL) for a backlink: RANK 2 = heading OUTLINE breadcrumb,
 1 = the property key at POS, 0 = TITLE fallback. Only visits FILE when OUTLINE
-is nil, so the expensive path runs on the minority of links."
+is nil, so the expensive path runs on the minority of links. A footnote
+reference on a heading (\"Specifications[fn:1]\") is dropped from the breadcrumb."
   (cond
-   (outline (cons 2 (mapconcat #'identity outline "/")))
+   (outline (cons 2 (mapconcat (lambda (s)
+                                 (string-trim
+                                  (replace-regexp-in-string "\\[fn:[^]]*\\]" "" s)))
+                               outline "/")))
    ((and file (file-exists-p file))
     (or (ignore-errors
           (with-current-buffer (find-file-noselect file t)
