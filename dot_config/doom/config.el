@@ -333,26 +333,16 @@ Use as a dynamic block:  #+BEGIN: policies / #+END:  then refresh with C-c C-c."
 ;; property or a heading-less body link) we open the source at the link position
 ;; to name the property, or fall back to the node's title. The expensive path
 ;; runs ONLY on the outline-nil minority. See the "Backlinks" policy.
-(defun +my/backlink-context (outline file pos title)
-  "Return (RANK . LABEL) for a backlink: RANK 2 = heading OUTLINE breadcrumb,
-1 = the property key at POS, 0 = TITLE fallback. Only visits FILE when OUTLINE
-is nil, so the expensive path runs on the minority of links. A footnote
-reference on a heading (\"Specifications[fn:1]\") is dropped from the breadcrumb."
-  (cond
-   (outline (cons 2 (mapconcat (lambda (s)
-                                 (string-trim
-                                  (replace-regexp-in-string "\\[fn:[^]]*\\]" "" s)))
-                               outline "/")))
-   ((and file (file-exists-p file))
-    (or (ignore-errors
-          (with-current-buffer (find-file-noselect file t)
-            (save-excursion
-              (goto-char pos)
-              (let ((el (org-element-at-point)))
-                (when (eq (org-element-type el) 'node-property)
-                  (cons 1 (org-element-property :key el)))))))
-        (cons 0 title)))
-   (t (cons 0 title))))
+(defun +my/backlink-context (outline title)
+  "Return (RANK . LABEL) for a backlink: RANK 2 = heading OUTLINE breadcrumb
+(footnote references stripped), else 0 = the node TITLE. Reads only what
+org-roam already stored --- it never opens the linking file, so it is cheap and
+cannot fail on a non-org buffer or corrupt the org-element cache mid-dblock."
+  (if outline
+      (cons 2 (mapconcat (lambda (s)
+                           (string-trim (replace-regexp-in-string "\\[fn:[^]]*\\]" "" s)))
+                         outline "/"))
+    (cons 0 title)))
 
 (defun +my/backlinks-summary (rows)
   "Insert compact counts of ROWS by category, type, and context tail.
@@ -459,15 +449,15 @@ flexible columns to the window and truncates to fit. See the Backlinks policy."
         rows)
     (when self
       (dolist (l (org-roam-db-query
-                  [:select [source pos properties] :from links
+                  [:select [source properties] :from links
                    :where (and (= dest $s1) (= type "id"))] self))
-        (pcase-let ((`(,src ,pos ,lprops) l))
+        (pcase-let ((`(,src ,lprops) l))
           (unless (equal src self)
             (pcase-let ((`(,title ,file ,nprops)
                          (car (org-roam-db-query
                                [:select [title file properties] :from nodes :where (= id $s1)] src))))
               (pcase-let ((`(,rank . ,ctx)
-                           (+my/backlink-context (plist-get lprops :outline) file pos title)))
+                           (+my/backlink-context (plist-get lprops :outline) title)))
                 (puthash src (max rank (gethash src maxrank 0)) maxrank)
                 (let ((key (cons src ctx)))
                   (unless (gethash key seen)
