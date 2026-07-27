@@ -552,16 +552,12 @@ ROAM_REF. :width sets the display width (default 500). See the Backlinks policy.
 (defvar-local +my/backlinks-last-width nil)
 
 (defun +my/note-refresh-display ()
-  "Restore display state a silent dblock regenerate leaves stale. A refit
-regenerates blocks inside `with-silent-modifications', which suppresses the
-change hooks valign and inline-image display listen on --- so the table keeps
-its old column alignment (and its separator half-draws) and any embed inside a
-block (e.g. the cover) loses its overlay. Re-run both by hand. Best-effort;
-never errors."
-  (when (derived-mode-p 'org-mode)
-    (when (bound-and-true-p valign-mode) (ignore-errors (valign-buffer)))
-    (when org-startup-with-inline-images
-      (ignore-errors (org-remove-inline-images) (org-display-inline-images)))))
+  "Re-show inline images after a silent dblock regenerate. A refit regenerates
+blocks inside `with-silent-modifications', which suppresses the change hooks
+inline-image display listens on, so any embed inside a block (e.g. the cover)
+loses its overlay. Put the images back. Best-effort; never errors."
+  (when (and (derived-mode-p 'org-mode) org-startup-with-inline-images)
+    (ignore-errors (org-remove-inline-images) (org-display-inline-images))))
 
 (defun +my/backlinks-refit-window (win)
   "Regenerate the backlinks blocks in WIN's buffer, sized to WIN, when WIN's
@@ -582,8 +578,8 @@ width has changed since the last fit."
                 ;; preserves whatever modified state the buffer already had.
                 (with-silent-modifications
                   (save-excursion (ignore-errors (org-update-all-dblocks)))))
-              ;; The silent regen leaves valign alignment and inline images
-              ;; stale; refresh both.
+              ;; The silent regen drops the overlay on any embed inside a block
+              ;; (the cover); re-show the images.
               (+my/note-refresh-display))))))))
 
 (defun +my/backlinks-refit-visible ()
@@ -611,9 +607,13 @@ table back to each showing window so the display stays responsive."
   (dolist (win (get-buffer-window-list (current-buffer) nil 'visible))
     (+my/backlinks-refit-window win)))
 
-;; Display-width table alignment so org tables with links read straight (GUI)
-(add-hook 'org-mode-hook #'valign-mode)
-(setq valign-fancy-bar t)
+;; Table alignment is left to org's own `org-table-align' (the dblock writers
+;; call it after building a table). It measures DISPLAY width --- it discounts
+;; the hidden portion of an id: link --- so a link-heavy table aligns correctly
+;; in a monospace font with no help. valign-mode was tried here and made it
+;; WORSE: it re-aligns with its own overlays, fought org-table-align, misaligned
+;; the link columns, half-drew the separator, and went stale on every regen. So
+;; it is intentionally off.
 
 ;; --- Prose: soft-wrap, not hard newlines -------------------------------------
 ;; Notes store one logical line per paragraph and let the editor wrap visually
