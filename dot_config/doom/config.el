@@ -504,6 +504,45 @@ flexible columns to the window and truncates to fit. See the Backlinks policy."
      (org-create-dblock '(:name "backlinks"))
      (org-update-dblock))))
 
+;; --- Dynamic block: cover — the node's primary image, via its sidecar --------
+;; A subject's cover is declared once, on the media sidecar that affiliates the
+;; subject under a `Cover' heading (see the Backlinks policy). This block finds
+;; that sidecar and embeds its image from the sidecar's file ROAM_REF, so the
+;; embed path is DERIVED: move the image (with its sidecar) and a refresh
+;; re-points it --- the note never hand-writes a fragile file: path. Like the
+;; backlinks block it is DB-only (never opens a file), so it is cheap and safe.
+(defun org-dblock-write:cover (params)
+  "Embed the current node's cover image, derived from its `Cover' sidecar's file
+ROAM_REF. :width sets the display width (default 500). See the Backlinks policy."
+  (let ((self (ignore-errors (org-roam-node-id (org-roam-node-at-point))))
+        (width (or (plist-get params :width) 500))
+        sidecar)
+    (when self
+      (dolist (l (org-roam-db-query
+                  [:select [source properties] :from links
+                   :where (and (= dest $s1) (= type "id"))] self))
+        (pcase-let ((`(,src ,lprops) l))
+          (when (and (null sidecar) (equal (plist-get lprops :outline) '("Cover")))
+            (setq sidecar src))))
+      (when sidecar
+        (let ((ref  (caar (org-roam-db-query
+                           [:select [ref] :from refs
+                            :where (and (= node-id $s1) (= type "file"))] sidecar)))
+              (sfile (caar (org-roam-db-query
+                            [:select [file] :from nodes :where (= id $s1)] sidecar))))
+          (when (and ref sfile buffer-file-name)
+            (insert (format "#+attr_org: :width %d\n[[file:%s]]" width
+                            (file-relative-name
+                             (expand-file-name ref (file-name-directory sfile))
+                             (file-name-directory buffer-file-name))))))))))
+
+(after! org
+  (org-dynamic-block-define
+   "cover"
+   (lambda ()
+     (org-create-dblock '(:name "cover" :width 500))
+     (org-update-dblock))))
+
 ;; --- Keep the backlinks table sized to its window ----------------------------
 ;; The table is rendered to the window width, so it must regenerate when the
 ;; window resizes or a file first shows it. Debounced; a refit never marks a
@@ -511,6 +550,14 @@ flexible columns to the window and truncates to fit. See the Backlinks policy."
 ;; when a real edit is saved.
 (defvar +my/backlinks-refit-timer nil)
 (defvar-local +my/backlinks-last-width nil)
+
+(defun +my/note-refresh-images ()
+  "Re-display inline images after a dblock regenerated. Regenerating a block
+rewrites its text, dropping the overlay on any embed inside it (e.g. the cover),
+so a bare regenerate would make the image vanish. Acts only when the buffer is
+set to show images, and never errors."
+  (when (and (derived-mode-p 'org-mode) org-startup-with-inline-images)
+    (ignore-errors (org-remove-inline-images) (org-display-inline-images))))
 
 (defun +my/backlinks-refit-window (win)
   "Regenerate the backlinks blocks in WIN's buffer, sized to WIN, when WIN's
@@ -523,14 +570,17 @@ width has changed since the last fit."
             (when (and w (not (equal w +my/backlinks-last-width))
                        (save-excursion
                          (goto-char (point-min))
-                         (re-search-forward "^#\\+BEGIN: backlinks" nil t)))
+                         (re-search-forward "^#\\+BEGIN: \\(?:backlinks\\|cover\\)" nil t)))
               (setq +my/backlinks-last-width w)
               (let ((+my/backlinks-force-width w))
                 ;; A refit is display only: keep it out of the undo history and
                 ;; never let it touch the modified flag. with-silent-modifications
                 ;; preserves whatever modified state the buffer already had.
                 (with-silent-modifications
-                  (save-excursion (ignore-errors (org-update-all-dblocks))))))))))))
+                  (save-excursion (ignore-errors (org-update-all-dblocks)))))
+              ;; Regenerating dropped the overlay on any embed inside a block
+              ;; (the cover); put the images back.
+              (+my/note-refresh-images))))))))
 
 (defun +my/backlinks-refit-visible ()
   "Refit the backlinks tables in every visible window."
