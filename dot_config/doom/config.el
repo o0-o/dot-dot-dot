@@ -74,14 +74,14 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Agent/")
-(setq org-roam-directory "~/Agent/")
-(setq org-roam-db-location "~/Agent/org-roam.db")
+(setq org-directory "~/Harness/")
+(setq org-roam-directory "~/Harness/")
+(setq org-roam-db-location "~/Harness/org-roam.db")
 
 ;; Land in the knowledge base: new buffers and the dashboard default here, so
-;; C-x C-f and friends start in ~/Agent rather than wherever Emacs was launched.
-(setq default-directory (expand-file-name "~/Agent/"))
-(setq +doom-dashboard-pwd-policy (expand-file-name "~/Agent/"))
+;; C-x C-f and friends start in ~/Harness rather than wherever Emacs was launched.
+(setq default-directory (expand-file-name "~/Harness/"))
+(setq +doom-dashboard-pwd-policy (expand-file-name "~/Harness/"))
 
 ;; Sidecars are named <artifact>.org, so a name like "page.html.org" matches
 ;; Emacs's composite-suffix html pattern ("\\.[sx]?html?\\(\\.[a-zA-Z_]+\\)?\\'"
