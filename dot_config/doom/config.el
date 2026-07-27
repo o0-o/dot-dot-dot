@@ -83,6 +83,13 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 (setq default-directory (expand-file-name "~/Harness/"))
 (setq +doom-dashboard-pwd-policy (expand-file-name "~/Harness/"))
 
+;; Reload from disk, fine-grained: SPC b r applies only the changed regions as
+;; ordinary edits, so `undo' brings your version back (nvim-style). Plain
+;; `global-auto-revert-mode' (already on) auto-reloads clean buffers; it can't
+;; use fine-grain (that recurses), so it stays a plain revert -- but it only
+;; reverts unmodified buffers, so it never discards your unsaved work.
+(map! :leader "b r" #'revert-buffer-with-fine-grain)
+
 ;; Sidecars are named <artifact>.org, so a name like "page.html.org" matches
 ;; Emacs's composite-suffix html pattern ("\\.[sx]?html?\\(\\.[a-zA-Z_]+\\)?\\'"
 ;; -> mhtml-mode) before the org rule. Force-prepend an org entry so the final
