@@ -551,13 +551,17 @@ ROAM_REF. :width sets the display width (default 500). See the Backlinks policy.
 (defvar +my/backlinks-refit-timer nil)
 (defvar-local +my/backlinks-last-width nil)
 
-(defun +my/note-refresh-images ()
-  "Re-display inline images after a dblock regenerated. Regenerating a block
-rewrites its text, dropping the overlay on any embed inside it (e.g. the cover),
-so a bare regenerate would make the image vanish. Acts only when the buffer is
-set to show images, and never errors."
-  (when (and (derived-mode-p 'org-mode) org-startup-with-inline-images)
-    (ignore-errors (org-remove-inline-images) (org-display-inline-images))))
+(defun +my/note-refresh-display ()
+  "Restore display state a silent dblock regenerate leaves stale. A refit
+regenerates blocks inside `with-silent-modifications', which suppresses the
+change hooks valign and inline-image display listen on --- so the table keeps
+its old column alignment (and its separator half-draws) and any embed inside a
+block (e.g. the cover) loses its overlay. Re-run both by hand. Best-effort;
+never errors."
+  (when (derived-mode-p 'org-mode)
+    (when (bound-and-true-p valign-mode) (ignore-errors (valign-buffer)))
+    (when org-startup-with-inline-images
+      (ignore-errors (org-remove-inline-images) (org-display-inline-images)))))
 
 (defun +my/backlinks-refit-window (win)
   "Regenerate the backlinks blocks in WIN's buffer, sized to WIN, when WIN's
@@ -578,9 +582,9 @@ width has changed since the last fit."
                 ;; preserves whatever modified state the buffer already had.
                 (with-silent-modifications
                   (save-excursion (ignore-errors (org-update-all-dblocks)))))
-              ;; Regenerating dropped the overlay on any embed inside a block
-              ;; (the cover); put the images back.
-              (+my/note-refresh-images))))))))
+              ;; The silent regen leaves valign alignment and inline images
+              ;; stale; refresh both.
+              (+my/note-refresh-display))))))))
 
 (defun +my/backlinks-refit-visible ()
   "Refit the backlinks tables in every visible window."
