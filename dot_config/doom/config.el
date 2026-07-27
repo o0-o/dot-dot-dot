@@ -286,6 +286,9 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 ;; Indent YAML with spaces by hand; avoid TAB inside the block (it's org-cycle).
 (after! org
   (setq org-adapt-indentation nil)
+  ;; Show a note's cover (and any inline image) on open, sized by #+attr_org
+  ;; (org-image-actual-width is nil, so the per-image :width wins).
+  (setq org-startup-with-inline-images t)
   (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1))))
 
 ;; --- Dynamic block: the policies that extend this procedure ------------------
