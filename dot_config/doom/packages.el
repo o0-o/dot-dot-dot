@@ -58,4 +58,6 @@
 
 ;; Reveal link/emphasis markup on the element under the cursor (live-preview feel).
 (package! org-appear)
-(package! valign)
+;; valign was removed: its pixel-aligned pretty tables fight org-table-align and
+;; the width-fitted backlinks dblock, breaking on every resize. ASCII tables win.
+;; (Config comment near the dblock section has the full story.)
