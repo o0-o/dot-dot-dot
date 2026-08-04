@@ -970,6 +970,29 @@ close this workspace; else leave the window. Aborts if killing is declined."
   (define-key treemacs-mode-map [mouse-1]
               #'treemacs-single-click-expand-action))
 
+;; --- Project root: the knowledge base is one project --------------------------
+;; Domains inside the knowledge base are their own git repositories, so
+;; projectile's nearest-.git rule would root the project -- and with it the
+;; treemacs sidebar, via project-follow -- at a domain when visiting anything
+;; inside one. The KB is one body of work: for any directory under
+;; `org-roam-directory', the project is the KB root, full stop. Both project
+;; systems get the pin (projectile drives Doom and treemacs; project.el drives
+;; eglot and friends).
+(defun +my/kb-project-root (dir)
+  "Return the knowledge-base root when DIR sits inside it, else nil."
+  (let ((root (expand-file-name org-roam-directory)))
+    (when (file-in-directory-p (expand-file-name dir) root)
+      root)))
+(defun +my/kb-project-find (dir)
+  "`project-find-functions' entry wrapping `+my/kb-project-root'."
+  (when-let ((root (+my/kb-project-root dir)))
+    (cons 'transient root)))
+(after! projectile
+  (setq projectile-project-root-functions
+        (cons #'+my/kb-project-root projectile-project-root-functions)))
+(after! project
+  (add-to-list 'project-find-functions #'+my/kb-project-find))
+
 ;; A grabbable divider between windows, so the sidebar resizes by mouse drag.
 ;; Doom's default right divider is 1 px — nearly impossible to hit; drags land
 ;; on the fringe instead (<left-fringe> <drag-mouse-1> is undefined).
