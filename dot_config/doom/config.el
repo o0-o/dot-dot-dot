@@ -3,7 +3,6 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
-
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
 ;; (setq user-full-name "John Doe"
@@ -164,7 +163,6 @@ TTY frames are left bare so they inherit the terminal's own ANSI colors."
 
 ;; Any remaining undetermined file opens as text, not fundamental-mode.
 (setq-default major-mode 'text-mode)
-
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
@@ -327,183 +325,6 @@ Use as a dynamic block:  #+BEGIN: policies / #+END:  then refresh with C-c C-c."
      (org-create-dblock '(:name "policies"))
      (org-update-dblock))))
 
-;; --- Dynamic block: backlinks — everything that links this node --------------
-;; A typed, materialized backlinks view. Each row is a node that links here:
-;;   | Link | Category | Type | Context | Description |
-;; Category/Type come from the linking node's classification. Context is WHERE
-;; the link sits in that node: its outline breadcrumb when it is under a heading
-;; (free — org-roam stores :outline per link); when the outline is empty (a
-;; property or a heading-less body link) we open the source at the link position
-;; to name the property, or fall back to the node's title. The expensive path
-;; runs ONLY on the outline-nil minority. See the "Backlinks" policy.
-(defun +my/backlink-context (outline title)
-  "Return (RANK . LABEL) for a backlink: RANK 2 = heading OUTLINE breadcrumb
-(footnote references stripped), else 0 = the node TITLE. Reads only what
-org-roam already stored --- it never opens the linking file, so it is cheap and
-cannot fail on a non-org buffer or corrupt the org-element cache mid-dblock."
-  (if outline
-      (cons 2 (mapconcat (lambda (s)
-                           (string-trim (replace-regexp-in-string "\\[fn:[^]]*\\]" "" s)))
-                         outline "/"))
-    (cons 0 title)))
-
-(defun +my/backlinks-summary (rows)
-  "Insert compact counts of ROWS by category, type, and context tail.
-The context tail is the last breadcrumb segment, so many links landing under a
-shared heading (e.g. .../Compliance) collapse into one tallied bucket."
-  (cl-flet ((tally (idx tail)
-              (let ((h (make-hash-table :test 'equal)) pairs)
-                (dolist (r rows)
-                  (let ((k (if tail (car (last (split-string (nth idx r) "/")))
-                             (nth idx r))))
-                    (when (and k (not (string-empty-p k)))
-                      (puthash k (1+ (gethash k h 0)) h))))
-                (maphash (lambda (k v) (push (cons k v) pairs)) h)
-                (if (null pairs) "--"
-                  (mapconcat (lambda (p) (format "%s %d" (car p) (cdr p)))
-                             (sort pairs (lambda (a b) (> (cdr a) (cdr b)))) " · ")))))
-    (insert (format "%d backlink%s.\n" (length rows) (if (= 1 (length rows)) "" "s")))
-    (insert (format "- By category :: %s\n" (tally 2 nil)))
-    (insert (format "- By type :: %s\n" (tally 3 nil)))
-    (insert (format "- By context :: %s" (tally 4 t)))))
-
-(defun +my/trunc (s n)
-  "Truncate S to N display columns, marking overflow with an ellipsis."
-  (if (and s (> (string-width s) n))
-      (concat (truncate-string-to-width s (max 1 (1- n))) "…")
-    (or s "")))
-
-(defvar +my/backlinks-force-width nil
-  "When non-nil, the width +my/backlinks-table sizes to, overriding the window.
-The refit hook binds it to a specific window's width, so a regenerate driven by
-a size-change event sizes to that window rather than whichever one is selected.")
-
-(defvar +my/backlinks-commit-width 79
-  "Width the backlinks table is written to on save (the PEP 8 line length), so
-its committed form stays stable across windows and machines. The display fills
-the real window on open and resize; only the on-disk form is pinned to this.")
-
-(defun +my/backlinks-window-width (win)
-  "Columns available for the table in WIN. `window-body-width' does not subtract
-the line-number gutter, so do that here, plus a column of slack so the table
-never reaches the right edge."
-  (max 20 (- (window-body-width win)
-             (or (ignore-errors
-                   (with-selected-window win
-                     (when (bound-and-true-p display-line-numbers)
-                       (line-number-display-width 'columns))))
-                 0)
-             1)))
-
-(defun +my/backlinks-table (rows limit)
-  "Insert ROWS as a table sized between a floor and its natural width. The table
-grows with the window until every cell shows in full, then stops --- it never
-adds empty space past its content --- and below its natural width it shrinks all
-columns proportionally to fit. Truncation is a rendered effect only; the full
-text lives on the linking node and in the query. LIMIT caps the rows."
-  (let* ((total (length rows))
-         (shown (if (and limit (> total limit)) (seq-take rows limit) rows))
-         (win (or +my/backlinks-force-width
-                  (let ((w (get-buffer-window (current-buffer) t)))
-                    (if w (+my/backlinks-window-width w) +my/backlinks-commit-width))))
-         ;; natural width of each column: the widest cell, but never below its header
-         (nat (lambda (i header)
-                (apply #'max (string-width header)
-                       (mapcar (lambda (r) (string-width (nth i r))) shown))))
-         (ln (funcall nat 1 "Link"))    (cn (funcall nat 2 "Category"))
-         (tn (funcall nat 3 "Type"))    (xn (funcall nat 4 "Context"))
-         (dn (funcall nat 5 "Description"))
-         (natsum (+ ln cn tn xn dn))
-         ;; grow to the window, but never past the natural width (all cells full)
-         (budget (- (min win (+ natsum 16)) 16))
-         ;; Category and Type stay at their natural width (they are short); the
-         ;; long columns absorb the shrink. floor() keeps the sum within budget.
-         (catw cn) (typw tn)
-         (flexnat (+ ln xn dn))
-         (flexbudget (max 18 (- budget catw typw)))
-         (scale (if (< flexbudget flexnat) (/ (float flexbudget) flexnat) 1.0))
-         (linkw (max 6 (floor (* ln scale))))
-         (ctxw  (max 6 (floor (* xn scale))))
-         (descw (max 6 (floor (* dn scale)))))
-    (insert (format "| %s | %s | %s | %s | %s |\n|-+-+-+-+-|\n"
-                    (+my/trunc "Link" linkw) (+my/trunc "Category" catw)
-                    (+my/trunc "Type" typw) (+my/trunc "Context" ctxw)
-                    (+my/trunc "Description" descw)))
-    (dolist (r shown)
-      (insert (format "| [[id:%s][%s]] | %s | %s | %s | %s |\n"
-                      (nth 0 r) (+my/trunc (nth 1 r) linkw)
-                      (+my/trunc (nth 2 r) catw) (+my/trunc (nth 3 r) typw)
-                      (+my/trunc (nth 4 r) ctxw) (+my/trunc (nth 5 r) descw))))
-    (let ((table-end (point)))
-      (when (and limit (> total limit))
-        (insert (format "/Showing %d of %d; raise =:limit= or use =:summary t=./\n" limit total)))
-      (save-excursion (goto-char table-end) (forward-line -1)
-                      (ignore-errors (org-table-align))))))
-
-(defun org-dblock-write:backlinks (params)
-  "Table of the nodes that link this node: category, type, context, description.
-Use as a dynamic block:  #+BEGIN: backlinks [:category C] [:type T] [:limit N] [:summary t]
-:category and :type filter rows; :limit caps them; :summary renders counts by
-category, type, and context tail instead of rows. The row table sizes its
-flexible columns to the window and truncates to fit. See the Backlinks policy."
-  (let ((self (ignore-errors (org-roam-node-id (org-roam-node-at-point))))
-        (seen (make-hash-table :test 'equal))
-        (maxrank (make-hash-table :test 'equal))
-        rows)
-    (when self
-      (dolist (l (org-roam-db-query
-                  [:select [source properties] :from links
-                   :where (and (= dest $s1) (= type "id"))] self))
-        (pcase-let ((`(,src ,lprops) l))
-          (unless (equal src self)
-            (pcase-let ((`(,title ,file ,nprops)
-                         (car (org-roam-db-query
-                               [:select [title file properties] :from nodes :where (= id $s1)] src))))
-              (pcase-let ((`(,rank . ,ctx)
-                           (+my/backlink-context (plist-get lprops :outline) title)))
-                (puthash src (max rank (gethash src maxrank 0)) maxrank)
-                (let ((key (cons src ctx)))
-                  (unless (gethash key seen)
-                    (puthash key t seen)
-                    (let* ((cat (cdr (assoc "CATEGORY" nprops)))
-                           ;; org's built-in CATEGORY defaults to the filename; treat
-                           ;; that as "unclassified" and show blank.
-                           (cat (if (and cat file (equal cat (file-name-base file))) "" (or cat ""))))
-                      (push (list src title cat
-                                  (or (cdr (assoc "TYPE" nprops)) "")
-                                  ctx
-                                  (or (cdr (assoc "DESCRIPTION" nprops)) "")
-                                  rank)
-                            rows)))))))))
-      ;; A source that links under a real heading (rank>0) suppresses its own
-      ;; incidental title-context (rank 0) prose mentions.
-      (setq rows (cl-remove-if (lambda (r) (and (= (nth 6 r) 0)
-                                                (> (gethash (nth 0 r) maxrank 0) 0)))
-                               rows))
-      ;; :category / :type filters -- restrict to a task-relevant slice. Values
-      ;; read as symbols (or strings, when quoted for a multi-word value like
-      ;; "Web Page"); coerce to a string before comparing.
-      (let ((fcat (plist-get params :category))
-            (ftype (plist-get params :type)))
-        (when fcat
-          (setq fcat (format "%s" fcat))
-          (setq rows (cl-remove-if-not (lambda (r) (equal (nth 2 r) fcat)) rows)))
-        (when ftype
-          (setq ftype (format "%s" ftype))
-          (setq rows (cl-remove-if-not (lambda (r) (equal (nth 3 r) ftype)) rows))))
-      (setq rows (sort rows (lambda (a b) (string< (nth 4 a) (nth 4 b)))))
-      (cond
-       ((null rows) (insert "No backlinks."))
-       ((plist-get params :summary) (+my/backlinks-summary rows))
-       (t (+my/backlinks-table rows (plist-get params :limit)))))))
-
-(after! org
-  (org-dynamic-block-define
-   "backlinks"
-   (lambda ()
-     (org-create-dblock '(:name "backlinks"))
-     (org-update-dblock))))
-
 ;; --- Dynamic block: cover — the node's primary image, via its sidecar --------
 ;; A subject's cover is declared once, on the media sidecar that affiliates the
 ;; subject under a `Cover' heading (see the Backlinks policy). This block finds
@@ -542,78 +363,6 @@ ROAM_REF. :width sets the display width (default 500). See the Backlinks policy.
    (lambda ()
      (org-create-dblock '(:name "cover" :width 500))
      (org-update-dblock))))
-
-;; --- Keep the backlinks table sized to its window ----------------------------
-;; The table is rendered to the window width, so it must regenerate when the
-;; window resizes or a file first shows it. Debounced; a refit never marks a
-;; clean buffer modified -- the fit is a display concern, reaching disk only
-;; when a real edit is saved.
-(defvar +my/backlinks-refit-timer nil)
-(defvar-local +my/backlinks-last-width nil)
-
-(defun +my/note-refresh-display ()
-  "Re-show inline images after a silent dblock regenerate. A refit regenerates
-blocks inside `with-silent-modifications', which suppresses the change hooks
-inline-image display listens on, so any embed inside a block (e.g. the cover)
-loses its overlay. Put the images back. Best-effort; never errors."
-  (when (and (derived-mode-p 'org-mode) org-startup-with-inline-images)
-    (ignore-errors (org-remove-inline-images) (org-display-inline-images))))
-
-(defun +my/backlinks-refit-window (win)
-  "Regenerate the backlinks blocks in WIN's buffer, sized to WIN, when WIN's
-width has changed since the last fit."
-  (let ((buf (window-buffer win)))
-    (when (and (window-live-p win) (buffer-live-p buf))
-      (with-current-buffer buf
-        (when (derived-mode-p 'org-mode)
-          (let ((w (+my/backlinks-window-width win)))
-            (when (and w (not (equal w +my/backlinks-last-width))
-                       (save-excursion
-                         (goto-char (point-min))
-                         (re-search-forward "^#\\+BEGIN: \\(?:backlinks\\|cover\\)" nil t)))
-              (setq +my/backlinks-last-width w)
-              (let ((+my/backlinks-force-width w))
-                ;; A refit is display only: keep it out of the undo history and
-                ;; never let it touch the modified flag. with-silent-modifications
-                ;; preserves whatever modified state the buffer already had.
-                (with-silent-modifications
-                  (save-excursion (ignore-errors (org-update-all-dblocks)))))
-              ;; The silent regen drops the overlay on any embed inside a block
-              ;; (the cover); re-show the images.
-              (+my/note-refresh-display))))))))
-
-(defun +my/backlinks-refit-visible ()
-  "Refit the backlinks tables in every visible window."
-  (dolist (frame (frame-list))
-    (when (frame-visible-p frame)
-      (dolist (win (window-list frame 'no-mini))
-        (when (window-live-p win) (+my/backlinks-refit-window win))))))
-
-(defun +my/backlinks-schedule-refit (&rest _)
-  "Debounced trigger for `+my/backlinks-refit-visible'."
-  (when (timerp +my/backlinks-refit-timer) (cancel-timer +my/backlinks-refit-timer))
-  (setq +my/backlinks-refit-timer
-        (run-with-idle-timer 0.2 nil #'+my/backlinks-refit-visible)))
-
-;; Regenerate on any change that can alter a window's width or which buffer it
-;; shows: a resize, a split, opening a file, or switching buffers.
-(add-hook 'window-size-change-functions #'+my/backlinks-schedule-refit)
-(add-hook 'window-configuration-change-hook #'+my/backlinks-schedule-refit)
-
-(defun +my/backlinks-restore-display ()
-  "After a save (which pins the table to `+my/backlinks-commit-width'), refit the
-table back to each showing window so the display stays responsive."
-  (setq +my/backlinks-last-width nil)
-  (dolist (win (get-buffer-window-list (current-buffer) nil 'visible))
-    (+my/backlinks-refit-window win)))
-
-;; Table alignment is left to org's own `org-table-align' (the dblock writers
-;; call it after building a table). It measures DISPLAY width --- it discounts
-;; the hidden portion of an id: link --- so a link-heavy table aligns correctly
-;; in a monospace font with no help. valign-mode was tried here and made it
-;; WORSE: it re-aligns with its own overlays, fought org-table-align, misaligned
-;; the link columns, half-drew the separator, and went stale on every regen. So
-;; it is intentionally off.
 
 ;; --- Prose: soft-wrap, not hard newlines -------------------------------------
 ;; Notes store one logical line per paragraph and let the editor wrap visually
@@ -691,10 +440,7 @@ Best-effort: a DB hiccup or missing org-roam can never block the save."
     (when +my/org-roam-auto-insert-policies
       (ignore-errors (+my/org-roam--ensure-policies-block)))
     (when (fboundp 'org-roam-db-query)
-      ;; Pin the backlinks table to a stable width on disk; the display refits
-      ;; to the real window afterward (see +my/backlinks-restore-display).
-      (let ((+my/backlinks-force-width +my/backlinks-commit-width))
-        (ignore-errors (save-excursion (org-update-all-dblocks)))))))
+      (ignore-errors (save-excursion (org-update-all-dblocks))))))
 
 (defun +my/org-roam-insert-policies-block ()
   "Insert the :POLICIES: block into this note if absent, then refresh it.
@@ -706,8 +452,7 @@ Use to retrofit an existing note."
 
 (add-hook 'org-mode-hook
           (lambda ()
-            (add-hook 'before-save-hook #'+my/org-roam-policies-maintain nil t)
-            (add-hook 'after-save-hook #'+my/backlinks-restore-display nil t)))
+            (add-hook 'before-save-hook #'+my/org-roam-policies-maintain nil t)))
 
 ;; org-roam prepends the :PROPERTIES:/:ID: drawer, so the head below lands
 ;; right after it. No :POLICIES: slot here --- the save hook adds it once a
